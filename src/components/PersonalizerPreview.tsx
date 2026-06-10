@@ -34,18 +34,11 @@ export default function PersonalizerPreview({
     xl: "w-80 h-80",
   }[size];
 
-  const initialFontSize = {
-    sm: "tracking-[0.12em] text-[11px]",
-    md: "tracking-[0.16em] text-[17px] leading-none",
-    lg: "tracking-[0.2em] text-[25px] leading-none",
-    xl: "tracking-[0.25em] text-[34px] leading-none",
-  }[size];
-
-  const initialTranslateY = {
-    sm: "translateY(-3px)",
-    md: "translateY(-6px)",
-    lg: "translateY(-9px)",
-    xl: "translateY(-12px)",
+  const specs = {
+    sm: { fontSize: "11px", letterSpacing: "0.12em", translateY: "-4px" },
+    md: { fontSize: "17px", letterSpacing: "0.16em", translateY: "-8px" },
+    lg: { fontSize: "25px", letterSpacing: "0.20em", translateY: "-12px" },
+    xl: { fontSize: "34px", letterSpacing: "0.25em", translateY: "-16px" },
   }[size];
 
   return (
@@ -62,17 +55,25 @@ export default function PersonalizerPreview({
         />
         
         {/* Debossed Gold Hot-Stamped Initials Overlay (Centered) */}
-        <div className="absolute inset-0 flex items-center justify-center" style={{ transform: initialTranslateY }}>
+        <div className="absolute inset-0 flex items-center justify-center" style={{ transform: `translateY(${specs.translateY})` }}>
           {initials ? (
-            <div className="relative select-none">
+            <div className="relative select-none flex items-center justify-center" style={{ marginRight: `-${specs.letterSpacing}` }}>
               {/* Shadow Layer for 3D depth */}
-              <span className={`absolute inset-0 font-serif font-semibold text-black/50 translate-x-[0.5px] translate-y-[0.8px] blur-[0.5px] uppercase ${initialFontSize}`}>
+              <span 
+                className="absolute inset-0 font-serif font-semibold text-black/50 translate-x-[0.5px] translate-y-[0.8px] blur-[0.5px] uppercase text-center leading-none"
+                style={{
+                  fontSize: specs.fontSize,
+                  letterSpacing: specs.letterSpacing,
+                }}
+              >
                 {initials}
               </span>
               {/* Gold Foil Layer */}
               <span 
-                className={`font-serif font-bold text-center tracking-[0.2em] uppercase leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] ${initialFontSize}`}
+                className="font-serif font-bold text-center uppercase leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
                 style={{
+                  fontSize: specs.fontSize,
+                  letterSpacing: specs.letterSpacing,
                   color: "#d4af37",
                   background: "linear-gradient(135deg, #f3e5ab 0%, #d4af37 40%, #aa7c11 70%, #d4af37 100%)",
                   WebkitBackgroundClip: "text",
