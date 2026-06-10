@@ -35,10 +35,10 @@ export default function PersonalizerPreview({
   }[size];
 
   const specs = {
-    sm: { fontSize: "11px", letterSpacing: "0.12em", translateY: "-4px" },
-    md: { fontSize: "17px", letterSpacing: "0.16em", translateY: "-8px" },
-    lg: { fontSize: "25px", letterSpacing: "0.20em", translateY: "-12px" },
-    xl: { fontSize: "34px", letterSpacing: "0.25em", translateY: "-16px" },
+    sm: { fontSize: "11px", letterSpacing: "0.12em", translateY: "-5px" },
+    md: { fontSize: "17px", letterSpacing: "0.16em", translateY: "-9px" },
+    lg: { fontSize: "25px", letterSpacing: "0.20em", translateY: "-15px" },
+    xl: { fontSize: "34px", letterSpacing: "0.25em", translateY: "-20px" },
   }[size];
 
   return (
