@@ -63,7 +63,7 @@ export default function CartDrawer() {
                   <button
                     onClick={() => {
                       setCartOpen(false);
-                      router.push("/product/luxury-lip-balm");
+                      router.push("/customizer/luxury-lip-balm");
                     }}
                     className="btn-primary py-3 px-6 text-[10px]"
                   >

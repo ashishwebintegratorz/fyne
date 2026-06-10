@@ -155,7 +155,7 @@ interface HomepageProduct {
             Meticulously hand-stitched and hot-stamped in gold foil with your custom monograms.
           </p>
           <div className="pt-2">
-            <Link href="/product/luxury-lip-balm" className="btn-primary inline-flex items-center gap-2">
+            <Link href="/customizer/luxury-lip-balm" className="btn-primary inline-flex items-center gap-2">
               DISCOVER <ArrowRight size={12} />
             </Link>
           </div>
@@ -200,7 +200,7 @@ interface HomepageProduct {
               </div>
               
               <Link 
-                href="/product/luxury-lip-balm" 
+                href="/customizer/luxury-lip-balm" 
                 className="font-sans text-[10px] tracking-[0.15em] font-semibold text-brand-foreground hover:text-brand-primary uppercase border-b border-brand-foreground pb-0.5"
               >
                 View all
@@ -280,7 +280,7 @@ interface HomepageProduct {
 
                     {prod.isCustomizable && (
                       <Link 
-                        href={`/product/${prod.productId}`}
+                        href={`/customizer/${prod.productId}`}
                         className="block text-center text-[9px] font-sans font-semibold tracking-widest text-brand-foreground/55 hover:text-brand-primary uppercase pt-1 hover-underline w-max mx-auto"
                       >
                         Customize Case Monograms

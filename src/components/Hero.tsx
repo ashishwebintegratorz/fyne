@@ -64,14 +64,14 @@ export default function Hero() {
             className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4"
           >
             <Link
-              href="/product/luxury-lip-balm"
+              href="/customizer/luxury-lip-balm"
               className="inline-flex items-center justify-center gap-2 rounded-full bg-foreground px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-white transition-all duration-300 hover:bg-[#2a2826]"
             >
               Discover
               <ArrowRight size={14} />
             </Link>
             <Link
-              href="/product/luxury-lip-balm"
+              href="/customizer/luxury-lip-balm"
               className="inline-flex items-center justify-center rounded-full border border-[#d8c8b4] px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground transition-colors duration-300 hover:border-foreground"
             >
               Customize

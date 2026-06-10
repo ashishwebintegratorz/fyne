@@ -32,7 +32,7 @@ export default function Navbar() {
 
   const navLinks = [
     { name: "HOME", href: "/" },
-    { name: "CUSTOMIZER", href: "/product/luxury-lip-balm" },
+    { name: "CUSTOMIZER", href: "/customizer/luxury-lip-balm" },
     { name: "OUR STORY", href: "/about" },
     { name: "CONTACT US", href: "/contact" },
   ];
