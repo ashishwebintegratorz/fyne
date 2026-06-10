@@ -1,0 +1,169 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #ffffff;
+  --foreground: rgba(0, 0, 0, 0.81);
+  
+  --brand-primary: #000000;
+  --brand-foreground: rgba(0, 0, 0, 0.81);
+  --brand-heading: #000000;
+  --brand-border: rgba(0, 0, 0, 0.08);
+  --brand-bg-gray: #f5f5f5;
+  --brand-bg-green: #eef1ea;
+}
+
+.dark {
+  --background: #080808; /* Pure dark modern obsidian background */
+  --foreground: rgba(255, 255, 255, 0.85);
+  
+  --brand-primary: #ffffff; /* Buttons become light and text becomes light */
+  --brand-foreground: rgba(255, 255, 255, 0.85);
+  --brand-heading: #ffffff;
+  --brand-border: rgba(255, 255, 255, 0.12); /* Clean visible dark borders */
+  --brand-bg-gray: #121212; /* Darker grey backgrounds for cards in dark mode */
+  --brand-bg-green: #151a14;
+}
+
+@theme {
+  --font-serif: var(--font-serif), sans-serif;
+  --font-sans: var(--font-sans), sans-serif;
+  
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-heading: var(--brand-heading);
+  --color-brand-border: var(--brand-border);
+  --color-brand-bg-gray: var(--brand-bg-gray);
+  --color-brand-bg-green: var(--brand-bg-green);
+}
+
+html, body {
+  scroll-behavior: auto; /* Handled by Lenis scroll */
+  background-color: var(--background);
+  color: var(--foreground);
+  transition: background-color 0.4s ease, color 0.4s ease;
+  overflow-x: hidden;
+}
+
+/* Custom premium minimal scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Announcement bar */
+.announcement-bar {
+  background-color: var(--brand-primary);
+  color: var(--background);
+  text-transform: uppercase;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  padding: 10px 20px;
+  text-align: center;
+}
+
+/* Glassmorphism overrides */
+.glassmorphic {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-b: 1px solid var(--brand-border);
+}
+
+.dark .glassmorphic {
+  background: rgba(8, 8, 8, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-b: 1px solid var(--brand-border);
+}
+
+/* Text hover underline */
+.hover-underline {
+  position: relative;
+}
+.hover-underline::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  transform: scaleX(0);
+  height: 1px;
+  bottom: -4px;
+  left: 0;
+  background-color: var(--brand-primary);
+  transform-origin: bottom right;
+  transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.hover-underline:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+
+/* OVIA Styled Buttons (Minimalist, sharp corners, bold transition) */
+.btn-primary {
+  background-color: var(--brand-primary);
+  color: var(--background);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 14px 28px;
+  transition: all 0.3s ease;
+  border: 1px solid var(--brand-primary);
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  opacity: 0.85;
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--brand-primary);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 14px 28px;
+  transition: all 0.3s ease;
+  border: 1px solid var(--brand-primary);
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background-color: var(--brand-primary);
+  color: var(--background);
+}
+
+/* Lenis Integration */
+html.lenis, html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
