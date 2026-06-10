@@ -73,7 +73,7 @@ export default function Home() {
         const res = await fetch("/api/products");
         if (res.ok) {
           const data = await res.json();
-          if (data.success && data.products && data.products.length > 0) {
+          if (data.success && data.products) {
             const mapped = data.products.map((p: any) => ({
               productId: p.productId,
               name: p.name,

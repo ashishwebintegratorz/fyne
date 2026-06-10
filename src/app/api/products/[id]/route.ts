@@ -76,6 +76,9 @@ export async function PUT(
     for (const field of fields) {
       if (body[field] !== undefined) {
         product[field] = body[field];
+        if (field === "images" || field === "benefits" || field === "faqs") {
+          product.markModified(field);
+        }
       }
     }
 

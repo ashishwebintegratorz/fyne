@@ -129,7 +129,7 @@ export default function AdminProductsPage() {
         method: "DELETE",
       });
       if (res.ok) {
-        setProducts(products.filter(p => p.productId !== prod.productId));
+        setProducts(prevProducts => prevProducts.filter(p => p.productId !== prod.productId && p._id !== prod._id));
       } else {
         alert("Failed to delete product.");
       }
