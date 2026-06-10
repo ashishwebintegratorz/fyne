@@ -65,7 +65,19 @@ export default function Home() {
   const { addItem, setCartOpen, currency } = useCartStore();
   const [addedProductId, setAddedProductId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [products, setProducts] = useState<typeof BEST_SELLERS>(BEST_SELLERS);
+interface HomepageProduct {
+  productId: string;
+  name: string;
+  price: number;
+  stars: number;
+  reviewsCount: number;
+  isCustomizable: boolean;
+  defaultColor: string;
+  defaultInitials: string;
+  images?: string[];
+}
+
+  const [products, setProducts] = useState<HomepageProduct[]>(BEST_SELLERS as HomepageProduct[]);
 
   useEffect(() => {
     async function loadDbProducts() {
@@ -83,6 +95,7 @@ export default function Home() {
               isCustomizable: p.isCustomizable ?? true,
               defaultColor: p.defaultColor || "Cocoa Brown",
               defaultInitials: p.defaultInitials || "FN",
+              images: p.images || [],
             }));
             setProducts(mapped);
           }
@@ -209,12 +222,20 @@ export default function Home() {
                 >
                   {/* Image Frame - transparent background, uniform size, scaled layout */}
                   <div className="h-64 w-full bg-transparent flex items-center justify-center relative select-none transition-transform duration-300 group-hover:scale-105">
-                    <PersonalizerPreview 
-                      color={prod.defaultColor || "Cocoa Brown"} 
-                      initials={prod.defaultInitials || "FN"} 
-                      size="md" 
-                      className="w-full h-full"
-                    />
+                    {prod.images && prod.images.length > 0 ? (
+                      <img 
+                        src={prod.images[0]} 
+                        alt={prod.name} 
+                        className="object-contain max-h-full max-w-full"
+                      />
+                    ) : (
+                      <PersonalizerPreview 
+                        color={prod.defaultColor || "Cocoa Brown"} 
+                        initials={prod.defaultInitials || "FN"} 
+                        size="md" 
+                        className="w-full h-full"
+                      />
+                    )}
                   </div>
 
                   {/* Meta details */}

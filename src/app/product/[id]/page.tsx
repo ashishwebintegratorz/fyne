@@ -17,6 +17,7 @@ interface ProductData {
   isCustomizable: boolean;
   defaultColor?: string;
   defaultInitials?: string;
+  images?: string[];
 }
 
 const PRODUCTS_DB: Record<string, ProductData> = {
@@ -149,6 +150,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [qty, setQty] = useState(1);
   const [giftWrap, setGiftWrap] = useState(true);
   const [activeTab, setActiveTab] = useState<"details" | "shipping" | "faqs">("details");
+  const [customized, setCustomized] = useState(false);
 
   useEffect(() => {
     async function loadDbProduct() {
@@ -196,13 +198,21 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           <div className="lg:col-span-6 flex flex-col items-center justify-center">
             <div className="relative w-full aspect-[4/3] bg-transparent flex items-center justify-center p-6 overflow-hidden group">
               
-              {/* Live Debossed Custom Preview */}
-              <PersonalizerPreview 
-                color={selectedColor} 
-                initials={initials} 
-                size="xl" 
-                className="transition-transform duration-500 group-hover:scale-[1.02] w-full h-full"
-              />
+              {product.images && product.images.length > 0 && (!product.isCustomizable || !customized) ? (
+                <img 
+                  src={product.images[0]} 
+                  alt={product.name} 
+                  className="object-contain max-h-full max-w-full"
+                />
+              ) : (
+                /* Live Debossed Custom Preview */
+                <PersonalizerPreview 
+                  color={selectedColor} 
+                  initials={initials} 
+                  size="xl" 
+                  className="transition-transform duration-500 group-hover:scale-[1.02] w-full h-full"
+                />
+              )}
             </div>
           </div>
 
@@ -244,7 +254,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                       return (
                         <button
                           key={color}
-                          onClick={() => setSelectedColor(color)}
+                          onClick={() => {
+                            setSelectedColor(color);
+                            setCustomized(true);
+                          }}
                           className={`w-7 h-7 rounded-full border transition-all duration-300 relative ${
                             active ? "border-brand-primary scale-110 shadow-xs" : "border-brand-border hover:scale-105"
                           }`}
@@ -271,7 +284,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     type="text"
                     maxLength={3}
                     value={initials}
-                    onChange={(e) => setInitials(e.target.value.toUpperCase().replace(/[^A-Z]/g, ""))}
+                    onChange={(e) => {
+                      setInitials(e.target.value.toUpperCase().replace(/[^A-Z]/g, ""));
+                      setCustomized(true);
+                    }}
                     placeholder="E.G. FN"
                     className="bg-white dark:bg-[#0d0c0b] border border-brand-border focus:border-brand-primary font-serif tracking-[0.2em] text-xs uppercase px-4 py-3 w-40 text-center rounded-xs focus:outline-hidden"
                   />
