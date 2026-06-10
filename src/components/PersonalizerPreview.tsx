@@ -10,12 +10,12 @@ interface PersonalizerPreviewProps {
   size?: "sm" | "md" | "lg" | "xl";
 }
 
-export const LEATHER_COLORS: Record<string, { hex: string; image: string; desc: string }> = {
-  "Cocoa Brown": { hex: "#5c4033", image: "/products/cocoa-brown.jpg", desc: "Crocodile Embossed Cocoa" },
-  "Celeste Blue": { hex: "#4ba3e3", image: "/products/sky-blue.png", desc: "Crocodile Embossed Sky" },
-  "Midnight Navy": { hex: "#1d2951", image: "/products/midnight-navy.jpg", desc: "Crocodile Embossed Navy" },
-  "Forest Green": { hex: "#1b4d3e", image: "/products/forest-green.jpg", desc: "Crocodile Embossed Green" },
-  "Ruby Red": { hex: "#800020", image: "/products/ruby-red.jpg", desc: "Crocodile Embossed Ruby" },
+export const LEATHER_COLORS: Record<string, { hex: string; image: string; desc: string; imageScale: number }> = {
+  "Cocoa Brown": { hex: "#5c4033", image: "/products/cocoa-brown.png", desc: "Crocodile Embossed Cocoa", imageScale: 0.55 },
+  "Celeste Blue": { hex: "#4ba3e3", image: "/products/sky-blue.png", desc: "Crocodile Embossed Sky", imageScale: 0.99 },
+  "Midnight Navy": { hex: "#1d2951", image: "/products/midnight-navy.png", desc: "Crocodile Embossed Navy", imageScale: 0.85 },
+  "Forest Green": { hex: "#1b4d3e", image: "/products/forest-green.png", desc: "Crocodile Embossed Green", imageScale: 0.6 },
+  "Ruby Red": { hex: "#800020", image: "/products/ruby-red.png", desc: "Crocodile Embossed Ruby", imageScale: 0.6 },
 };
 
 export default function PersonalizerPreview({
@@ -50,10 +50,11 @@ export default function PersonalizerPreview({
           alt={`${color} leather case`}
           fill
           sizes="(max-w-768px) 100vw, 50vw"
-          className="object-contain"
+          className="object-contain transition-transform duration-300"
+          style={{ transform: `scale(${selectedColor.imageScale})` }}
           priority
         />
-        
+
         {/* Debossed Gold Hot-Stamped Initials Overlay (Centered) */}
         <div className="absolute inset-0 flex items-center justify-center" style={{ transform: "translateY(-2px)" }}>
           {initials ? (
@@ -63,7 +64,7 @@ export default function PersonalizerPreview({
                 {initials}
               </span>
               {/* Gold Foil Layer */}
-              <span 
+              <span
                 className={`font-serif font-bold text-center tracking-[0.2em] uppercase leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] ${initialFontSize}`}
                 style={{
                   color: "#d4af37",

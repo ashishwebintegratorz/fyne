@@ -168,16 +168,16 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     <div className="bg-white dark:bg-[#0d0c0b] text-brand-foreground py-16 px-6 md:px-12">
       <div className="max-w-7xl mx-auto pt-6 md:pt-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
-          
+
           {/* Column 1: Gallery Showcase (Left) - transparent background, uniform horizontal fitting */}
           <div className="lg:col-span-6 flex flex-col items-center justify-center">
             <div className="relative w-full aspect-[4/3] bg-transparent flex items-center justify-center p-6 overflow-hidden group">
-              
+
               {/* Live Debossed Custom Preview */}
-              <PersonalizerPreview 
-                color={selectedColor} 
-                initials={initials} 
-                size="xl" 
+              <PersonalizerPreview
+                color={selectedColor}
+                initials={initials}
+                size="xl"
                 className="transition-transform duration-500 group-hover:scale-[1.02] w-full h-full"
               />
             </div>
@@ -185,14 +185,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
           {/* Column 2: Buy Details & Forms (Right) */}
           <div className="lg:col-span-6 space-y-8">
-            
+
             {/* Title & Price */}
             <div className="space-y-3">
               <span className="font-sans text-[10px] tracking-[0.25em] font-semibold text-brand-foreground/60 uppercase">MAISON DE FYNÉ</span>
               <h1 className="font-serif text-3xl md:text-5xl font-light tracking-wide leading-tight text-brand-heading uppercase">
                 {product.name}
               </h1>
-              
+
               <div className="flex flex-col sm:flex-row sm:items-center gap-6">
                 <span className="font-sans text-lg font-semibold text-brand-heading">
                   {convertAndFormatPrice(product.price, currency)}
@@ -208,7 +208,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             {/* Customizer Panel (Shown only if isCustomizable is true) */}
             {product.isCustomizable && (
               <div className="p-6 border border-brand-border bg-white dark:bg-zinc-900/10 rounded-xs space-y-6">
-                
+
                 {/* 1. Color Picker */}
                 <div className="space-y-3">
                   <h4 className="font-serif text-[11px] font-semibold tracking-wider uppercase text-brand-heading flex items-center justify-between">
@@ -222,15 +222,19 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                         <button
                           key={color}
                           onClick={() => setSelectedColor(color)}
-                          className={`w-7 h-7 rounded-full border transition-all duration-300 relative ${
-                            active ? "border-brand-primary scale-110 shadow-xs" : "border-brand-border hover:scale-105"
-                          }`}
-                          style={{ backgroundColor: LEATHER_COLORS[color].hex }}
+                          className={`w-7 h-7 rounded-full border transition-all duration-300 relative overflow-hidden ${active ? "border-brand-primary scale-110 shadow-xs" : "border-brand-border hover:scale-105"
+                            }`}
+                          style={{
+                            backgroundColor: LEATHER_COLORS[color].hex,
+                            backgroundImage: `url(${LEATHER_COLORS[color].image})`,
+                            backgroundSize: '400%',
+                            backgroundPosition: 'center',
+                          }}
                           title={color}
                         >
                           {active && (
-                            <div className="absolute inset-0.5 border border-white rounded-full flex items-center justify-center">
-                              <Check size={8} className="text-white mix-blend-difference" />
+                            <div className="absolute inset-0.5 border border-white rounded-full flex items-center justify-center bg-black/20">
+                              <Check size={8} className="text-white" />
                             </div>
                           )}
                         </button>
@@ -260,24 +264,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               </div>
             )}
 
-            {/* Gifting Checkbox */}
-            <div className="flex items-center space-x-3 p-4 border border-brand-border bg-brand-bg-gray dark:bg-zinc-900/10 rounded-xs">
-              <input
-                type="checkbox"
-                id="giftWrap"
-                checked={giftWrap}
-                onChange={() => setGiftWrap(!giftWrap)}
-                className="w-4 h-4 rounded-xs border-brand-border text-brand-primary focus:ring-brand-primary accent-brand-primary"
-              />
-              <label htmlFor="giftWrap" className="font-sans text-xs text-brand-foreground/75 cursor-pointer leading-tight select-none">
-                <strong>Complimentary Gift Wrapping:</strong> Arrives inside our custom cedarwood box.
-              </label>
-            </div>
-
             {/* Qty & Add triggers */}
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-                
+
                 {/* Quantity Adjustment */}
                 <div className="flex items-center justify-between border border-brand-border rounded-xs p-1 sm:w-32">
                   <button
@@ -312,25 +302,22 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               <div className="flex border-b border-brand-border mb-6 text-[10px] tracking-[0.2em] font-semibold uppercase">
                 <button
                   onClick={() => setActiveTab("details")}
-                  className={`pb-3 pr-6 border-b transition-colors cursor-pointer ${
-                    activeTab === "details" ? "border-brand-primary text-brand-primary" : "border-transparent text-brand-foreground/50 hover:text-brand-primary"
-                  }`}
+                  className={`pb-3 pr-6 border-b transition-colors cursor-pointer ${activeTab === "details" ? "border-brand-primary text-brand-primary" : "border-transparent text-brand-foreground/50 hover:text-brand-primary"
+                    }`}
                 >
                   BENEFITS
                 </button>
                 <button
                   onClick={() => setActiveTab("shipping")}
-                  className={`pb-3 px-6 border-b transition-colors cursor-pointer ${
-                    activeTab === "shipping" ? "border-brand-primary text-brand-primary" : "border-transparent text-brand-foreground/50 hover:text-brand-primary"
-                  }`}
+                  className={`pb-3 px-6 border-b transition-colors cursor-pointer ${activeTab === "shipping" ? "border-brand-primary text-brand-primary" : "border-transparent text-brand-foreground/50 hover:text-brand-primary"
+                    }`}
                 >
                   SHIPPING
                 </button>
                 <button
                   onClick={() => setActiveTab("faqs")}
-                  className={`pb-3 px-6 border-b transition-colors cursor-pointer ${
-                    activeTab === "faqs" ? "border-brand-primary text-brand-primary" : "border-transparent text-brand-foreground/50 hover:text-brand-primary"
-                  }`}
+                  className={`pb-3 px-6 border-b transition-colors cursor-pointer ${activeTab === "faqs" ? "border-brand-primary text-brand-primary" : "border-transparent text-brand-foreground/50 hover:text-brand-primary"
+                    }`}
                 >
                   FAQS
                 </button>

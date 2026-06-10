@@ -46,36 +46,32 @@ export default function PersonalizePage() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0d0c0b] text-brand-foreground py-16 px-6 md:px-12 flex flex-col justify-center font-sans">
+    <div className="min-h-screen bg-white dark:bg-[#0d0c0b] text-brand-foreground py-12 px-6 md:px-12 flex flex-col justify-center font-sans">
       <div className="max-w-7xl mx-auto w-full pt-10">
-        
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-stretch">
-          
-          {/* Left Panel: High Fidelity Visualizer - transparent background, uniform aspect scale */}
-          <div className="lg:col-span-6 flex flex-col items-center justify-center bg-transparent p-6 min-h-[400px] lg:min-h-0 aspect-[4/3] relative overflow-hidden">
-            <div className="absolute inset-0 bg-radial from-brand-bg-green/5 via-transparent to-transparent pointer-events-none" />
-            
-            <PersonalizerPreview 
-              color={color} 
-              initials={initials} 
-              size="xl" 
-              className="w-full h-full"
-            />
 
-            <div className="absolute bottom-4 left-4 flex items-center gap-2 text-[10px] text-brand-foreground/50 tracking-widest uppercase select-none">
-              <Info size={12} className="text-brand-primary" />
-              <span>Real-time debossing simulation</span>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-stretch">
+
+          {/* Left Panel: High Fidelity Visualizer */}
+          <div className="lg:col-span-5 flex flex-col items-end justify-center">
+            <div className="relative w-130 h-130 bg-transparent flex items-center justify-center overflow-hidden group">
+
+              <PersonalizerPreview
+                color={color}
+                initials={initials}
+                size="xl"
+                className="transition-transform duration-500 group-hover:scale-[1.02] w-full h-full"
+              />
             </div>
           </div>
 
           {/* Right Panel: Configurator Form */}
-          <div className="lg:col-span-6 flex flex-col justify-between py-4 space-y-10">
-            
+          <div className="lg:col-span-7 flex flex-col justify-between py-4 space-y-10">
+
             {/* Step Header */}
             <div className="space-y-4">
               <span className="font-sans text-[10px] tracking-[0.25em] font-semibold text-brand-foreground/55 uppercase">FYNÉ PERSONALIZATION ATELIER</span>
               <h1 className="font-serif text-3xl md:text-5xl font-light tracking-wide leading-tight text-brand-heading uppercase">
-                Design Your Bespoke Casing
+                Design Your <br /> Bespoke Casing
               </h1>
               <p className="font-sans text-xs md:text-sm font-light text-brand-foreground/85 leading-relaxed max-w-xl">
                 Create a customized leather-cased organic lip balm. Handcrafted to order at our European studio, utilizing fine vegetable-tanned leathers and finished with solid metal gold bindings.
@@ -84,7 +80,7 @@ export default function PersonalizePage() {
 
             {/* Customization Details */}
             <div className="space-y-8">
-              
+
               {/* Step 1: Leather Color */}
               <div className="space-y-3">
                 <h3 className="font-serif text-[11px] font-semibold tracking-wider uppercase text-brand-heading flex justify-between items-baseline">
@@ -98,15 +94,19 @@ export default function PersonalizePage() {
                       <button
                         key={c}
                         onClick={() => setColor(c)}
-                        className={`w-7 h-7 rounded-full border transition-all duration-300 relative ${
-                          active ? "border-brand-primary scale-110 shadow-xs" : "border-brand-border hover:scale-105"
-                        }`}
-                        style={{ backgroundColor: LEATHER_COLORS[c].hex }}
+                        className={`w-7 h-7 rounded-full border transition-all duration-300 relative overflow-hidden ${active ? "border-brand-primary scale-110 shadow-xs" : "border-brand-border hover:scale-105"
+                          }`}
+                        style={{
+                          backgroundColor: LEATHER_COLORS[c].hex,
+                          backgroundImage: `url(${LEATHER_COLORS[c].image})`,
+                          backgroundSize: '400%',
+                          backgroundPosition: 'center',
+                        }}
                         title={c}
                       >
                         {active && (
-                          <div className="absolute inset-0.5 border border-white rounded-full flex items-center justify-center">
-                            <Check size={8} className="text-white mix-blend-difference" />
+                          <div className="absolute inset-0.5 border border-white rounded-full flex items-center justify-center bg-black/20">
+                            <Check size={8} className="text-white" />
                           </div>
                         )}
                       </button>
@@ -135,25 +135,12 @@ export default function PersonalizePage() {
                 </div>
               </div>
 
-              {/* Step 3: Complimentary Gifting Box */}
-              <div className="flex items-center space-x-3 p-4 border border-brand-border bg-brand-bg-gray dark:bg-zinc-900/10 rounded-xs max-w-xl">
-                <input
-                  type="checkbox"
-                  id="giftBox"
-                  checked={giftWrap}
-                  onChange={() => setGiftWrap(!giftWrap)}
-                  className="w-4 h-4 rounded-xs border-brand-border text-brand-primary focus:ring-brand-primary accent-brand-primary"
-                />
-                <label htmlFor="giftBox" className="font-sans text-xs text-brand-foreground/75 cursor-pointer leading-tight select-none">
-                  <strong>Complimentary Gift Wrapping:</strong> Arrives nested in a custom wooden coffret box.
-                </label>
-              </div>
 
             </div>
 
             {/* Bottom Actions */}
             <div className="pt-6 border-t border-brand-border flex flex-col sm:flex-row items-stretch sm:items-center gap-4 max-w-xl">
-              
+
               {/* Quantity Selector */}
               <div className="flex items-center border border-brand-border rounded-xs p-1 justify-between sm:w-32">
                 <button

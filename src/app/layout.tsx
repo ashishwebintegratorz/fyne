@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import CartDrawer from "@/components/CartDrawer";
 import OfferBannerModal from "@/components/OfferBannerModal";
 import Providers from "@/components/Providers";
+import Footer from "@/components/Footer";
 import "./globals.css";
 
 const josefin = Josefin_Sans({
@@ -50,6 +51,7 @@ export default function RootLayout({
           <main className="flex-grow flex flex-col">
             {children}
           </main>
+          <Footer />
         </Providers>
       </body>
     </html>
