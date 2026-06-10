@@ -42,10 +42,10 @@ export default function PersonalizerPreview({
   }[size];
 
   const initialTranslateY = {
-    sm: "translateY(-5px)",
-    md: "translateY(-10px)",
-    lg: "translateY(-15px)",
-    xl: "translateY(-22px)",
+    sm: "translateY(-3px)",
+    md: "translateY(-6px)",
+    lg: "translateY(-9px)",
+    xl: "translateY(-12px)",
   }[size];
 
   return (
