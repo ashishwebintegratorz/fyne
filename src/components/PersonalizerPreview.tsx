@@ -57,7 +57,7 @@ export default function PersonalizerPreview({
         {/* Debossed Gold Hot-Stamped Initials Overlay (Centered) */}
         <div className="absolute inset-0 flex items-center justify-center" style={{ transform: `translateY(${specs.translateY})` }}>
           {initials ? (
-            <div className="relative select-none flex items-center justify-center" style={{ marginRight: `-${specs.letterSpacing}` }}>
+            <div className="relative select-none flex items-center justify-center">
               {/* Shadow Layer for 3D depth */}
               <span 
                 className="absolute inset-0 font-serif font-semibold text-black/50 translate-x-[0.5px] translate-y-[0.8px] blur-[0.5px] uppercase text-center leading-none"
