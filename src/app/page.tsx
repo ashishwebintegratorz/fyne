@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCartStore, convertAndFormatPrice } from "@/store/useCartStore";
@@ -65,6 +65,34 @@ export default function Home() {
   const { addItem, setCartOpen, currency } = useCartStore();
   const [addedProductId, setAddedProductId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [products, setProducts] = useState<typeof BEST_SELLERS>(BEST_SELLERS);
+
+  useEffect(() => {
+    async function loadDbProducts() {
+      try {
+        const res = await fetch("/api/products");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.products && data.products.length > 0) {
+            const mapped = data.products.map((p: any) => ({
+              productId: p.productId,
+              name: p.name,
+              price: p.price,
+              stars: 5,
+              reviewsCount: 18,
+              isCustomizable: p.isCustomizable ?? true,
+              defaultColor: p.defaultColor || "Cocoa Brown",
+              defaultInitials: p.defaultInitials || "FN",
+            }));
+            setProducts(mapped);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load products from DB, using fallbacks:", err);
+      }
+    }
+    loadDbProducts();
+  }, []);
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
@@ -174,7 +202,7 @@ export default function Home() {
               className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth gap-8 pb-6 scrollbar-none"
               style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
-              {BEST_SELLERS.map((prod) => (
+              {products.map((prod) => (
                 <div 
                   key={prod.productId} 
                   className="flex-shrink-0 w-full sm:w-[calc(50%-16px)] md:w-[calc(33.333%-22px)] snap-start group flex flex-col justify-between text-left space-y-5"

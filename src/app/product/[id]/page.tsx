@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, use } from "react";
+import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { useCartStore, convertAndFormatPrice } from "@/store/useCartStore";
 import PersonalizerPreview, { LEATHER_COLORS } from "@/components/PersonalizerPreview";
@@ -141,7 +141,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const { id } = use(params);
   const { addItem, setCartOpen, currency } = useCartStore();
 
-  const product = PRODUCTS_DB[id] || PRODUCTS_DB["luxury-lip-balm"];
+  const [product, setProduct] = useState<ProductData>(PRODUCTS_DB[id] || PRODUCTS_DB["luxury-lip-balm"]);
 
   // Customizer inputs
   const [selectedColor, setSelectedColor] = useState(product.defaultColor || "Cocoa Brown");
@@ -149,6 +149,29 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [qty, setQty] = useState(1);
   const [giftWrap, setGiftWrap] = useState(true);
   const [activeTab, setActiveTab] = useState<"details" | "shipping" | "faqs">("details");
+
+  useEffect(() => {
+    async function loadDbProduct() {
+      try {
+        const res = await fetch(`/api/products/${id}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.product) {
+            const mapped = {
+              ...data.product,
+              id: data.product.productId // map SKU to id
+            };
+            setProduct(mapped);
+            setSelectedColor(data.product.defaultColor || "Cocoa Brown");
+            setInitials(data.product.defaultInitials || "AM");
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load product from DB, using fallbacks:", err);
+      }
+    }
+    loadDbProduct();
+  }, [id]);
 
   const handleAddToCart = () => {
     addItem({

@@ -38,9 +38,48 @@ export default function CheckoutPage() {
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "processing" | "success">("idle");
   const [orderRef, setOrderRef] = useState("");
 
+  // Coupon States
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; type: string; value: number } | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setValidatingCoupon(true);
+    setCouponError(null);
+    try {
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: couponCode }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setAppliedCoupon(data.coupon);
+        setCouponError(null);
+      } else {
+        setCouponError(data.error || "Failed to validate coupon.");
+      }
+    } catch (err) {
+      setCouponError("Unable to validate coupon code.");
+    } finally {
+      setValidatingCoupon(false);
+    }
+  };
+
   const subtotalUSD = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shippingCostUSD = shippingMethod === "priority" ? 15 : 0;
-  const totalUSD = subtotalUSD + shippingCostUSD;
+  
+  let discountUSD = 0;
+  if (appliedCoupon) {
+    if (appliedCoupon.type === "percentage") {
+      discountUSD = (subtotalUSD * appliedCoupon.value) / 100;
+    } else if (appliedCoupon.type === "fixed") {
+      discountUSD = appliedCoupon.value;
+    }
+  }
+  const totalUSD = Math.max(0, subtotalUSD + shippingCostUSD - discountUSD);
 
   const {
     register,
@@ -92,14 +131,20 @@ export default function CheckoutPage() {
           customerInfo: {
             name: `${data.firstName} ${data.lastName}`,
             email: data.email,
-            address: `${data.address}, ${data.city}, ${data.country}`,
+            address: data.address,
+            city: data.city,
+            country: data.country,
+            phone: data.phone,
+            zipCode: data.zipCode
           },
           paymentProvider: paymentProvider,
+          shippingMethod: shippingMethod,
+          couponCode: appliedCoupon ? appliedCoupon.code : null,
         }),
       });
 
       const result = await response.json();
-      console.log("Mock Payment API Output:", result);
+      console.log("MongoDB Inbound Order API Output:", result);
 
       setTimeout(() => {
         setPaymentStatus("success");
@@ -585,6 +630,44 @@ export default function CheckoutPage() {
                 ))}
               </div>
 
+              {/* Coupon Code Entry */}
+              <div className="border-t border-brand-border pt-4 text-left space-y-2">
+                <label className="font-serif text-[10px] tracking-widest font-semibold uppercase text-brand-primary">Atelier Coupon Code</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    disabled={!!appliedCoupon || validatingCoupon}
+                    placeholder="ENTER CODE"
+                    className="flex-grow bg-white dark:bg-[#0d0c0b] border border-brand-border text-xs px-3 py-2.5 uppercase tracking-wider rounded-xs focus:outline-hidden focus:border-brand-primary font-mono disabled:opacity-50"
+                  />
+                  {appliedCoupon ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAppliedCoupon(null);
+                        setCouponCode("");
+                      }}
+                      className="px-3.5 py-2 text-[9px] font-bold tracking-widest uppercase text-red-500 border border-red-500/30 hover:border-red-500 rounded-xs cursor-pointer bg-transparent"
+                    >
+                      REMOVE
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleApplyCoupon}
+                      disabled={validatingCoupon || !couponCode.trim()}
+                      className="px-4 py-2 text-[9px] font-bold tracking-widest uppercase bg-brand-primary text-white dark:bg-white dark:text-black rounded-xs cursor-pointer border border-brand-primary dark:border-white disabled:opacity-50"
+                    >
+                      APPLY
+                    </button>
+                  )}
+                </div>
+                {couponError && <p className="text-[10px] text-red-500 font-semibold">{couponError}</p>}
+                {appliedCoupon && <p className="text-[10px] text-emerald-600 font-semibold">Coupon applied successfully!</p>}
+              </div>
+
               {/* Cost calculations */}
               <div className="border-t border-brand-border pt-4 space-y-2 text-xs text-left">
                 <div className="flex justify-between text-brand-foreground/60">
@@ -595,6 +678,12 @@ export default function CheckoutPage() {
                   <span>Delivery method</span>
                   <span>{shippingMethod === "priority" ? convertAndFormatPrice(15, currency) : "Free"}</span>
                 </div>
+                {appliedCoupon && (
+                  <div className="flex justify-between text-red-500 font-semibold">
+                    <span>Coupon Savings ({appliedCoupon.code})</span>
+                    <span>-{convertAndFormatPrice(discountUSD, currency)}</span>
+                  </div>
+                )}
                 <div className="h-px bg-brand-border my-2" />
                 <div className="flex justify-between text-sm font-semibold uppercase text-brand-heading">
                   <span>Total Due</span>
