@@ -35,10 +35,17 @@ export default function PersonalizerPreview({
   }[size];
 
   const initialFontSize = {
-    sm: "tracking-[0.1em] text-[9px]",
-    md: "tracking-[0.15em] text-[13px] leading-tight",
-    lg: "tracking-[0.2em] text-[18px] leading-none",
-    xl: "tracking-[0.25em] text-[24px] leading-none",
+    sm: "tracking-[0.12em] text-[11px]",
+    md: "tracking-[0.16em] text-[17px] leading-none",
+    lg: "tracking-[0.2em] text-[25px] leading-none",
+    xl: "tracking-[0.25em] text-[34px] leading-none",
+  }[size];
+
+  const initialTranslateY = {
+    sm: "translateY(-5px)",
+    md: "translateY(-10px)",
+    lg: "translateY(-15px)",
+    xl: "translateY(-22px)",
   }[size];
 
   return (
@@ -55,7 +62,7 @@ export default function PersonalizerPreview({
         />
         
         {/* Debossed Gold Hot-Stamped Initials Overlay (Centered) */}
-        <div className="absolute inset-0 flex items-center justify-center" style={{ transform: "translateY(-2px)" }}>
+        <div className="absolute inset-0 flex items-center justify-center" style={{ transform: initialTranslateY }}>
           {initials ? (
             <div className="relative select-none">
               {/* Shadow Layer for 3D depth */}
