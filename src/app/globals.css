@@ -168,3 +168,21 @@ html.lenis, html.lenis body {
 .lenis.lenis-scrolling iframe {
   pointer-events: none;
 }
+
+/* Monogram Foil Gradients */
+.monogram-foil-gold {
+  background: linear-gradient(135deg, #f3e5ab 0%, #d4af37 40%, #aa7c11 70%, #d4af37 100%) !important;
+  background-clip: text !important;
+  -webkit-background-clip: text !important;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.monogram-foil-silver {
+  background: linear-gradient(135deg, #f0f0f0 0%, #c0c0c0 40%, #8a8a8a 70%, #c0c0c0 100%) !important;
+  background-clip: text !important;
+  -webkit-background-clip: text !important;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+}
+

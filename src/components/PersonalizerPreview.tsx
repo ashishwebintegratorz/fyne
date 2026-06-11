@@ -117,16 +117,12 @@ export default function PersonalizerPreview({
               </span>
               {/* Foil Layer */}
               <span 
-                className="font-serif font-bold text-center uppercase leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
+                className={`font-serif font-bold text-center uppercase leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] ${
+                  foilColor === "silver" ? "monogram-foil-silver" : "monogram-foil-gold"
+                }`}
                 style={{
                   fontSize: specs.fontSize,
                   letterSpacing: specs.letterSpacing,
-                  color: foilColor === "silver" ? "#c0c0c0" : "#d4af37",
-                  background: foilColor === "silver"
-                    ? "linear-gradient(135deg, #f0f0f0 0%, #c0c0c0 40%, #8a8a8a 70%, #c0c0c0 100%)"
-                    : "linear-gradient(135deg, #f3e5ab 0%, #d4af37 40%, #aa7c11 70%, #d4af37 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
                   textShadow: "0.5px 0.5px 0.5px rgba(255,255,255,0.15)",
                 }}
               >
