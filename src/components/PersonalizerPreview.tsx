@@ -8,6 +8,7 @@ interface PersonalizerPreviewProps {
   initials?: string;
   className?: string;
   size?: "sm" | "md" | "lg" | "xl";
+  foilColor?: "gold" | "silver";
 }
 
 export const LEATHER_COLORS: Record<string, { hex: string; image: string; desc: string }> = {
@@ -27,6 +28,7 @@ export default function PersonalizerPreview({
   initials = "",
   className = "",
   size = "lg",
+  foilColor = "gold",
 }: PersonalizerPreviewProps) {
   const [dbColors, setDbColors] = useState<any[] | null>(cachedColors);
 
@@ -103,9 +105,9 @@ export default function PersonalizerPreview({
         <div className="absolute inset-0 flex items-center justify-center" style={{ transform: `translateY(${specs.translateY})` }}>
           {initials ? (
             <div className="relative select-none flex items-center justify-center">
-              {/* Highlight Layer for debossed depth */}
+              {/* Shadow Layer for 3D depth */}
               <span 
-                className="absolute inset-0 font-serif font-bold text-white/30 translate-x-[0.5px] translate-y-[0.8px] blur-[0.2px] uppercase text-center leading-none"
+                className="absolute inset-0 font-serif font-semibold text-black/50 translate-x-[0.5px] translate-y-[0.8px] blur-[0.5px] uppercase text-center leading-none"
                 style={{
                   fontSize: specs.fontSize,
                   letterSpacing: specs.letterSpacing,
@@ -113,13 +115,15 @@ export default function PersonalizerPreview({
               >
                 {initials}
               </span>
-              {/* Black Debossed Text Layer */}
+              {/* Foil Layer */}
               <span 
-                className="font-serif font-bold text-center uppercase leading-none text-neutral-900/90"
+                className={`font-serif font-bold text-center uppercase leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] ${
+                  foilColor === "silver" ? "monogram-foil-silver" : "monogram-foil-gold"
+                }`}
                 style={{
                   fontSize: specs.fontSize,
                   letterSpacing: specs.letterSpacing,
-                  textShadow: "-0.5px -0.5px 0.5px rgba(0,0,0,0.5), 0.5px 0.5px 0.5px rgba(255,255,255,0.1)",
+                  textShadow: "0.5px 0.5px 0.5px rgba(255,255,255,0.15)",
                 }}
               >
                 {initials}
