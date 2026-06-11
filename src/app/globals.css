@@ -171,6 +171,7 @@ html.lenis, html.lenis body {
 
 /* Monogram Foil Gradients */
 .monogram-foil-gold {
+  display: inline-block !important;
   background: linear-gradient(135deg, #f3e5ab 0%, #d4af37 40%, #aa7c11 70%, #d4af37 100%) !important;
   background-clip: text !important;
   -webkit-background-clip: text !important;
@@ -179,6 +180,7 @@ html.lenis, html.lenis body {
 }
 
 .monogram-foil-silver {
+  display: inline-block !important;
   background: linear-gradient(135deg, #f0f0f0 0%, #c0c0c0 40%, #8a8a8a 70%, #c0c0c0 100%) !important;
   background-clip: text !important;
   -webkit-background-clip: text !important;

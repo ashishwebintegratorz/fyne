@@ -117,7 +117,7 @@ export default function PersonalizerPreview({
               </span>
               {/* Foil Layer */}
               <span 
-                className={`font-serif font-bold text-center uppercase leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] ${
+                className={`inline-block font-serif font-bold text-center uppercase leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] ${
                   foilColor === "silver" ? "monogram-foil-silver" : "monogram-foil-gold"
                 }`}
                 style={{
