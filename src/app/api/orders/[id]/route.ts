@@ -4,6 +4,7 @@ import Order from "@/models/Order";
 import Customer from "@/models/Customer";
 import ActivityLog from "@/models/ActivityLog";
 import { authenticateAdmin } from "@/lib/auth";
+import { OrderUpdateSchema } from "@/lib/schemas";
 
 export async function GET(
   request: Request,
@@ -43,7 +44,12 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const { status, trackingNumber } = await request.json();
+    const body = await request.json();
+    const result = OrderUpdateSchema.safeParse(body);
+    if (!result.success) {
+      return NextResponse.json({ error: result.error.issues[0].message || "Invalid order update details" }, { status: 400 });
+    }
+    const { status, trackingNumber } = result.data;
 
     const order = await Order.findById(id);
     if (!order) {

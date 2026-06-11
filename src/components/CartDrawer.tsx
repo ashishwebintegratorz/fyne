@@ -95,6 +95,11 @@ export default function CartDrawer() {
                           MONOGRAM: {item.initials}
                         </p>
                       )}
+                      {item.giftWrap && (
+                        <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold tracking-wider uppercase">
+                          + PREMIUM GIFT WRAP (+$10 USD)
+                        </p>
+                      )}
 
                       {/* Quantity & Actions */}
                       <div className="flex items-center justify-between pt-3">

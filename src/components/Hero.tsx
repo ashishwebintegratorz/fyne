@@ -2,9 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import PersonalizerPreview from "@/components/PersonalizerPreview";
 
 export default function Hero() {
   const containerVariants = {
@@ -12,88 +12,87 @@ export default function Hero() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.15,
-        delayChildren: 0.25,
+        staggerChildren: 0.12,
+        delayChildren: 0.2,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 15 },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.85,
+        duration: 0.8,
         ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
       },
     },
   };
 
   return (
-    <section className="relative min-h-[92vh] overflow-hidden bg-[#fbf8f5] px-6 py-20">
-      <div className="absolute inset-x-0 top-0 h-64 bg-gradient-to-b from-white to-transparent pointer-events-none" />
-      <div className="absolute -left-20 top-16 w-[42vw] h-[42vw] rounded-full bg-[#f3e5d6] opacity-75 blur-[140px] pointer-events-none" />
-      <div className="relative max-w-7xl mx-auto grid gap-12 lg:grid-cols-[1.05fr_0.95fr] items-center">
-        <div className="space-y-8 text-center lg:text-left z-10">
+    <section className="relative min-h-[60vh] sm:min-h-[90vh] flex items-center justify-start overflow-hidden px-6 sm:px-12 md:px-20 py-16 sm:py-24 bg-[#f3eae0] select-none">
+      {/* Full-bleed high-end background image */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/hero-bg.png"
+          alt="Fyné Luxury Leather Casing Lineup"
+          fill
+          priority
+          className="object-cover object-center lg:object-right-center"
+        />
+        {/* Refined gradient overlays for excellent text contrast across viewport sizes */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#f3eae0]/80 via-[#f3eae0]/40 to-transparent pointer-events-none md:block hidden" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-[#f3eae0]/70 to-[#f3eae0]/90 pointer-events-none md:hidden block" />
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        {/* Left minimal column */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+          className="lg:col-span-6 space-y-8 text-left max-w-xl"
+        >
           <motion.span
             variants={itemVariants}
-            className="inline-flex items-center gap-2 px-3 py-1 bg-[#fff5eb] border border-[#e8d7ca] rounded-full text-[10px] tracking-[0.35em] uppercase font-semibold text-[#7a6655]"
+            className="block text-[10px] tracking-[0.45em] uppercase font-bold text-[#705f52] font-sans"
           >
-            NEW COLLECTION
+            MAISON DE FYNÉ
           </motion.span>
 
           <motion.h1
             variants={itemVariants}
-            className="font-serif text-4xl sm:text-5xl lg:text-6xl font-normal tracking-[0.08em] leading-[1.05] text-foreground"
+            className="font-serif text-4xl sm:text-5xl lg:text-[4.2rem] font-light tracking-wide leading-[1.15] text-[#222222] uppercase"
           >
-            Pure Care. <br />
-            <span className="font-light text-[#8f775d]">Natural Glow.</span>
+            Personalized <br />
+            <span className="font-serif font-light italic text-[#7a6655] lowercase tracking-[0.05em] normal-case">everyday</span> <br />
+            Luxury.
           </motion.h1>
 
           <motion.p
             variants={itemVariants}
-            className="max-w-xl mx-auto lg:mx-0 font-sans text-sm md:text-base text-foreground/70 leading-relaxed"
+            className="font-sans text-xs md:text-sm font-light tracking-wider text-[#443c35] leading-relaxed max-w-xs"
           >
-            Premium, clean formulas crafted for sensitive skin and all ages. 
-            Fragrance-free, deeply nourishing, and designed to feel like a little luxury every day.
+            Premium organic formulas encased inside bespoke Florentine leather sleeves, custom hot-stamped in gold foil with your monograms.
           </motion.p>
 
           <motion.div
             variants={itemVariants}
-            className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4"
+            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4"
           >
             <Link
               href="/customizer/luxury-lip-balm"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-foreground px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-white transition-all duration-300 hover:bg-[#2a2826]"
+              className="inline-flex items-center justify-center gap-2 rounded-xs bg-[#1a1816] px-8 py-4 text-[10px] font-bold uppercase tracking-[0.25em] text-white hover:bg-brand-primary transition-all duration-300 shadow-xs hover:shadow-md text-center"
             >
-              Discover
-              <ArrowRight size={14} />
-            </Link>
-            <Link
-              href="/customizer/luxury-lip-balm"
-              className="inline-flex items-center justify-center rounded-full border border-[#d8c8b4] px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground transition-colors duration-300 hover:border-foreground"
-            >
-              Customize
+              CUSTOMIZE CASING
+              <ArrowRight size={12} />
             </Link>
           </motion.div>
-        </div>
-
-        <motion.div
-          variants={itemVariants}
-          className="relative flex justify-center z-10"
-        >
-          <div className="w-full max-w-lg rounded-[2rem] border border-[#e6d7c8] bg-white shadow-[0_40px_90px_rgba(0,0,0,0.08)] p-8">
-            <div className="mb-6 text-center text-[11px] uppercase tracking-[0.35em] text-[#7a6655]">
-              Best seller
-            </div>
-            <PersonalizerPreview color="Blush Pink" initials="OV" size="xl" />
-            <div className="mt-6 text-center">
-              <p className="text-sm font-medium text-foreground">The Fyné Monogram Sleeve</p>
-              <p className="text-[11px] text-foreground/60 uppercase tracking-[0.3em] mt-2">Handcrafted leather case with gold hot stamp</p>
-            </div>
-          </div>
         </motion.div>
+        
+        {/* Right empty column allows the background image casing row to shine */}
+        <div className="lg:col-span-6 h-12 sm:h-48 lg:h-96 pointer-events-none" />
       </div>
     </section>
   );

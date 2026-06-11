@@ -23,7 +23,7 @@ interface ProductData {
 const PRODUCTS_DB: Record<string, ProductData> = {
   "cocoa-brown": {
     id: "cocoa-brown",
-    name: "Cocoa Brown Crocodile Set",
+    name: "Fyné’s Customise leather case",
     price: 85,
     description: "A luxurious vanilla-scented lip balm housed in Fyné’s signature leather case. Designed to nourish and soften lips while adding a touch of elegance to your everyday essentials.",
     benefits: [
@@ -151,6 +151,26 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [giftWrap, setGiftWrap] = useState(true);
   const [activeTab, setActiveTab] = useState<"details" | "shipping" | "faqs">("details");
   const [customized, setCustomized] = useState(false);
+  const [casingColors, setCasingColors] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function loadCasingColors() {
+      try {
+        const res = await fetch("/api/customizer-colors");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.colors && data.colors.length > 0) {
+            setCasingColors(data.colors);
+            // Default selectedColor to the first casing color option in the database on load
+            setSelectedColor(data.colors[0].name);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load casing colors from DB:", err);
+      }
+    }
+    loadCasingColors();
+  }, []);
 
   useEffect(() => {
     async function loadDbProduct() {
@@ -164,8 +184,37 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               id: data.product.productId // map SKU to id
             };
             setProduct(mapped);
-            setSelectedColor(data.product.defaultColor || "Cocoa Brown");
+            setSelectedColor((prev) => {
+              // Only overwrite selectedColor if it's the initial default
+              if (prev === "Cocoa Brown" && data.product.defaultColor) {
+                return data.product.defaultColor;
+              }
+              return prev;
+            });
             setInitials(data.product.defaultInitials || "AM");
+            return;
+          }
+        }
+
+        // If product not found (e.g., legacy URL /customizer/luxury-lip-balm),
+        // query the catalog to load the 1st active product.
+        const listRes = await fetch("/api/products");
+        if (listRes.ok) {
+          const listData = await listRes.json();
+          if (listData.success && listData.products && listData.products.length > 0) {
+            const firstProd = listData.products[0];
+            const mapped = {
+              ...firstProd,
+              id: firstProd.productId
+            };
+            setProduct(mapped);
+            setSelectedColor((prev) => {
+              if (prev === "Cocoa Brown" && firstProd.defaultColor) {
+                return firstProd.defaultColor;
+              }
+              return prev;
+            });
+            setInitials(firstProd.defaultInitials || "AM");
           }
         }
       } catch (err) {
@@ -179,7 +228,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     addItem({
       productId: product.id,
       name: product.name,
-      price: product.price,
+      price: product.price + (giftWrap ? 10 : 0),
       quantity: qty,
       color: product.isCustomizable ? selectedColor : "",
       initials: product.isCustomizable ? initials : "",
@@ -193,23 +242,23 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     <div className="bg-white dark:bg-[#0d0c0b] text-brand-foreground py-16 px-6 md:px-12">
       <div className="max-w-7xl mx-auto pt-6 md:pt-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
-          
+
           {/* Column 1: Gallery Showcase (Left) - transparent background, uniform horizontal fitting */}
           <div className="lg:col-span-6 flex flex-col items-center justify-center">
             <div className="relative w-full aspect-[4/3] bg-transparent flex items-center justify-center p-6 overflow-hidden group">
-              
-              {product.images && product.images.length > 0 && (!product.isCustomizable || !customized) ? (
-                <img 
-                  src={product.images[0]} 
-                  alt={product.name} 
+
+              {product.images && product.images.length > 0 && !product.isCustomizable ? (
+                <img
+                  src={product.images[0]}
+                  alt={product.name}
                   className="object-contain max-h-full max-w-full"
                 />
               ) : (
                 /* Live Debossed Custom Preview */
-                <PersonalizerPreview 
-                  color={selectedColor} 
-                  initials={initials} 
-                  size="xl" 
+                <PersonalizerPreview
+                  color={selectedColor}
+                  initials={initials}
+                  size="xl"
                   className="transition-transform duration-500 group-hover:scale-[1.02] w-full h-full"
                 />
               )}
@@ -218,17 +267,17 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
           {/* Column 2: Buy Details & Forms (Right) */}
           <div className="lg:col-span-6 space-y-8">
-            
+
             {/* Title & Price */}
             <div className="space-y-3">
               <span className="font-sans text-[10px] tracking-[0.25em] font-semibold text-brand-foreground/60 uppercase">MAISON DE FYNÉ</span>
               <h1 className="font-serif text-3xl md:text-5xl font-light tracking-wide leading-tight text-brand-heading uppercase">
-                {product.name}
+                Fyné’s LEATHER CUSTOM CASING
               </h1>
-              
+
               <div className="flex flex-col sm:flex-row sm:items-center gap-6">
                 <span className="font-sans text-lg font-semibold text-brand-heading">
-                  {convertAndFormatPrice(product.price, currency)}
+                  {convertAndFormatPrice(product.price + (giftWrap ? 10 : 0), currency)}
                 </span>
                 <CurrencySelector className="w-full sm:w-48" />
               </div>
@@ -241,7 +290,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             {/* Customizer Panel (Shown only if isCustomizable is true) */}
             {product.isCustomizable && (
               <div className="p-6 border border-brand-border bg-white dark:bg-zinc-900/10 rounded-xs space-y-6">
-                
+
                 {/* 1. Color Picker */}
                 <div className="space-y-3">
                   <h4 className="font-serif text-[11px] font-semibold tracking-wider uppercase text-brand-heading flex items-center justify-between">
@@ -249,20 +298,26 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     <span className="text-brand-foreground font-sans font-light normal-case text-xs">{selectedColor}</span>
                   </h4>
                   <div className="flex flex-wrap gap-2.5">
-                    {Object.keys(LEATHER_COLORS).map((color) => {
-                      const active = selectedColor === color;
+                    {(casingColors.length > 0
+                      ? casingColors
+                      : Object.keys(LEATHER_COLORS).map((color) => ({
+                        name: color,
+                        hex: LEATHER_COLORS[color].hex,
+                      }))
+                    ).map((colorObj) => {
+                      const colorName = colorObj.name;
+                      const active = selectedColor === colorName;
                       return (
                         <button
-                          key={color}
+                          key={colorName}
                           onClick={() => {
-                            setSelectedColor(color);
+                            setSelectedColor(colorName);
                             setCustomized(true);
                           }}
-                          className={`w-7 h-7 rounded-full border transition-all duration-300 relative ${
-                            active ? "border-brand-primary scale-110 shadow-xs" : "border-brand-border hover:scale-105"
-                          }`}
-                          style={{ backgroundColor: LEATHER_COLORS[color].hex }}
-                          title={color}
+                          className={`w-7 h-7 rounded-full border transition-all duration-300 relative ${active ? "border-brand-primary scale-110 shadow-xs" : "border-brand-border hover:scale-105"
+                            }`}
+                          style={{ backgroundColor: colorObj.hex }}
+                          title={colorName}
                         >
                           {active && (
                             <div className="absolute inset-0.5 border border-white rounded-full flex items-center justify-center">
@@ -309,14 +364,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 className="w-4 h-4 rounded-xs border-brand-border text-brand-primary focus:ring-brand-primary accent-brand-primary"
               />
               <label htmlFor="giftWrap" className="font-sans text-xs text-brand-foreground/75 cursor-pointer leading-tight select-none">
-                <strong>Complimentary Gift Wrapping:</strong> Arrives inside our custom cedarwood box.
+                <strong>Premium Gift Wrapping (+$10.00 USD):</strong> Arrives inside our custom cedarwood box.
               </label>
             </div>
 
             {/* Qty & Add triggers */}
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-                
+
                 {/* Quantity Adjustment */}
                 <div className="flex items-center justify-between border border-brand-border rounded-xs p-1 sm:w-32">
                   <button
@@ -351,25 +406,22 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               <div className="flex border-b border-brand-border mb-6 text-[10px] tracking-[0.2em] font-semibold uppercase">
                 <button
                   onClick={() => setActiveTab("details")}
-                  className={`pb-3 pr-6 border-b transition-colors cursor-pointer ${
-                    activeTab === "details" ? "border-brand-primary text-brand-primary" : "border-transparent text-brand-foreground/50 hover:text-brand-primary"
-                  }`}
+                  className={`pb-3 pr-6 border-b transition-colors cursor-pointer ${activeTab === "details" ? "border-brand-primary text-brand-primary" : "border-transparent text-brand-foreground/50 hover:text-brand-primary"
+                    }`}
                 >
                   BENEFITS
                 </button>
                 <button
                   onClick={() => setActiveTab("shipping")}
-                  className={`pb-3 px-6 border-b transition-colors cursor-pointer ${
-                    activeTab === "shipping" ? "border-brand-primary text-brand-primary" : "border-transparent text-brand-foreground/50 hover:text-brand-primary"
-                  }`}
+                  className={`pb-3 px-6 border-b transition-colors cursor-pointer ${activeTab === "shipping" ? "border-brand-primary text-brand-primary" : "border-transparent text-brand-foreground/50 hover:text-brand-primary"
+                    }`}
                 >
                   SHIPPING
                 </button>
                 <button
                   onClick={() => setActiveTab("faqs")}
-                  className={`pb-3 px-6 border-b transition-colors cursor-pointer ${
-                    activeTab === "faqs" ? "border-brand-primary text-brand-primary" : "border-transparent text-brand-foreground/50 hover:text-brand-primary"
-                  }`}
+                  className={`pb-3 px-6 border-b transition-colors cursor-pointer ${activeTab === "faqs" ? "border-brand-primary text-brand-primary" : "border-transparent text-brand-foreground/50 hover:text-brand-primary"
+                    }`}
                 >
                   FAQS
                 </button>

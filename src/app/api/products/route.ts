@@ -3,6 +3,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import Product from "@/models/Product";
 import ActivityLog from "@/models/ActivityLog";
 import { authenticateAdmin } from "@/lib/auth";
+import { ProductSchema } from "@/lib/schemas";
 
 // GET: Public endpoint to fetch all active products (optionally show drafts if admin)
 export async function GET(request: Request) {
@@ -34,11 +35,12 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { productId, name, price, description, benefits, faqs, category, stock, images, status } = body;
-
-    if (!productId || !name || price === undefined || !description) {
-      return NextResponse.json({ error: "Required fields missing: productId, name, price, description" }, { status: 400 });
+    const result = ProductSchema.safeParse(body);
+    if (!result.success) {
+      return NextResponse.json({ error: result.error.issues[0].message || "Invalid input data" }, { status: 400 });
     }
+
+    const { productId, name, price, description, benefits, faqs, category, stock, images, status } = result.data;
 
     // Check unique productId
     const existing = await Product.findOne({ productId });

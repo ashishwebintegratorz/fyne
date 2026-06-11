@@ -3,6 +3,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import Coupon from "@/models/Coupon";
 import ActivityLog from "@/models/ActivityLog";
 import { authenticateAdmin } from "@/lib/auth";
+import { CouponSchema } from "@/lib/schemas";
 
 export async function PUT(
   request: Request,
@@ -18,21 +19,26 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
-    const coupon = await Coupon.findById(id);
+    const result = CouponSchema.partial().safeParse(body);
+    if (!result.success) {
+      return NextResponse.json({ error: result.error.issues[0].message || "Invalid coupon details" }, { status: 400 });
+    }
+    const validatedData = result.data;
 
+    const coupon = await Coupon.findById(id);
     if (!coupon) {
       return NextResponse.json({ error: "Coupon not found" }, { status: 404 });
     }
 
-    const fields = ["code", "type", "value", "expirationDate", "usageLimit", "active"];
+    const fields = ["code", "type", "value", "expirationDate", "usageLimit", "active"] as const;
     for (const field of fields) {
-      if (body[field] !== undefined) {
-        if (field === "code") {
-          coupon.code = body.code.trim().toUpperCase();
+      if (validatedData[field] !== undefined) {
+        if (field === "code" && validatedData.code) {
+          coupon.code = validatedData.code.trim().toUpperCase();
         } else if (field === "expirationDate") {
-          coupon.expirationDate = body.expirationDate ? new Date(body.expirationDate) : null;
+          coupon.expirationDate = validatedData.expirationDate ? new Date(validatedData.expirationDate) : null;
         } else {
-          coupon[field] = body[field];
+          coupon[field] = validatedData[field] as any;
         }
       }
     }

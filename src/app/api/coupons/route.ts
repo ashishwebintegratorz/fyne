@@ -3,6 +3,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import Coupon from "@/models/Coupon";
 import ActivityLog from "@/models/ActivityLog";
 import { authenticateAdmin } from "@/lib/auth";
+import { CouponSchema } from "@/lib/schemas";
 
 // GET: List all coupons
 export async function GET(request: Request) {
@@ -33,11 +34,11 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { code, type, value, expirationDate, usageLimit, active } = body;
-
-    if (!code || !type || value === undefined) {
-      return NextResponse.json({ error: "Required fields missing: code, type, value" }, { status: 400 });
+    const result = CouponSchema.safeParse(body);
+    if (!result.success) {
+      return NextResponse.json({ error: result.error.issues[0].message || "Invalid coupon details" }, { status: 400 });
     }
+    const { code, type, value, expirationDate, usageLimit, active } = result.data;
 
     const uppercaseCode = code.trim().toUpperCase();
 

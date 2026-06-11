@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 
 interface PersonalizerPreviewProps {
@@ -18,13 +18,52 @@ export const LEATHER_COLORS: Record<string, { hex: string; image: string; desc: 
   "Ruby Red": { hex: "#800020", image: "/products/ruby-red.jpg", desc: "Crocodile Embossed Ruby" },
 };
 
+// Global shared cache and fetch promise to prevent duplicate concurrent API requests
+let cachedColors: any[] | null = null;
+let fetchPromise: Promise<any> | null = null;
+
 export default function PersonalizerPreview({
   color,
   initials,
   className = "",
   size = "lg",
 }: PersonalizerPreviewProps) {
-  const selectedColor = LEATHER_COLORS[color] || LEATHER_COLORS["Cocoa Brown"];
+  const [dbColors, setDbColors] = useState<any[] | null>(cachedColors);
+
+  useEffect(() => {
+    if (dbColors) return;
+    if (cachedColors) {
+      setDbColors(cachedColors);
+      return;
+    }
+
+    if (!fetchPromise) {
+      fetchPromise = fetch("/api/customizer-colors")
+        .then((res) => (res.ok ? res.json() : { success: false }))
+        .then((data) => {
+          if (data.success && data.colors) {
+            cachedColors = data.colors;
+            return data.colors;
+          }
+          return [];
+        })
+        .catch((err) => {
+          console.error("Failed to fetch customizer casing colors:", err);
+          return [];
+        });
+    }
+
+    fetchPromise.then((colors) => {
+      setDbColors(colors);
+    });
+  }, [dbColors]);
+
+  // Dynamic color resolution
+  const dbMatch = dbColors?.find(
+    (c) => c.name.toLowerCase() === color.toLowerCase()
+  );
+  
+  const imageSrc = dbMatch?.image || LEATHER_COLORS[color]?.image || "/products/cocoa-brown.jpg";
 
   // Responsive scale configurations
   const scale = {
@@ -45,14 +84,18 @@ export default function PersonalizerPreview({
     <div className={`relative flex items-center justify-center select-none ${scale} ${className}`}>
       {/* Oval Case Image container */}
       <div className="relative w-full h-full flex items-center justify-center">
-        <Image
-          src={selectedColor.image}
-          alt={`${color} leather case`}
-          fill
-          sizes="(max-w-768px) 100vw, 50vw"
-          className="object-contain"
-          priority
-        />
+        {dbColors === null ? (
+          <div className="w-5 h-5 border border-brand-border border-t-brand-primary rounded-full animate-spin" />
+        ) : (
+          <Image
+            src={imageSrc}
+            alt={`${color} leather case`}
+            fill
+            sizes="(max-w-768px) 100vw, 50vw"
+            className="object-contain"
+            priority
+          />
+        )}
         
         {/* Debossed Gold Hot-Stamped Initials Overlay (Centered) */}
         <div className="absolute inset-0 flex items-center justify-center" style={{ transform: `translateY(${specs.translateY})` }}>

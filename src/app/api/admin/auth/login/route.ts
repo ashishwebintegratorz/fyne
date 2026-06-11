@@ -3,6 +3,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import Admin from "@/models/Admin";
 import ActivityLog from "@/models/ActivityLog";
 import { signToken } from "@/lib/auth";
+import { LoginSchema } from "@/lib/schemas";
 
 export async function POST(request: Request) {
   try {
@@ -21,11 +22,12 @@ export async function POST(request: Request) {
       await defaultAdmin.save();
     }
 
-    const { email, password } = await request.json();
-
-    if (!email || !password) {
-      return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
+    const body = await request.json();
+    const result = LoginSchema.safeParse(body);
+    if (!result.success) {
+      return NextResponse.json({ error: result.error.issues[0].message || "Invalid input data" }, { status: 400 });
     }
+    const { email, password } = result.data;
 
     const admin = await Admin.findOne({ email });
     if (!admin) {

@@ -17,7 +17,8 @@ import {
   Moon,
   Menu,
   X,
-  User
+  User,
+  Palette
 } from "lucide-react";
 
 interface AdminUser {
@@ -111,6 +112,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: "Customers", href: "/admin/customers", icon: Users },
     { label: "Coupons", href: "/admin/coupons", icon: Tag },
     { label: "Shipping Rates", href: "/admin/shipping", icon: Truck },
+    { label: "Customizer Casing", href: "/admin/customizer", icon: Palette },
     { label: "Audit Logs", href: "/admin/logs", icon: ShieldCheck },
   ];
 

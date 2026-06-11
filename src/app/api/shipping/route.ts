@@ -3,6 +3,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import ShippingZone from "@/models/ShippingZone";
 import ActivityLog from "@/models/ActivityLog";
 import { authenticateAdmin } from "@/lib/auth";
+import { ShippingZoneSchema } from "@/lib/schemas";
 
 // GET: Fetch all shipping zones
 export async function GET(request: Request) {
@@ -33,11 +34,11 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { zoneName, countries, baseRate, priorityRate, minFreeShippingSubtotal } = body;
-
-    if (!zoneName || !countries || !Array.isArray(countries) || countries.length === 0) {
-      return NextResponse.json({ error: "Required fields missing: zoneName, countries list" }, { status: 400 });
+    const result = ShippingZoneSchema.safeParse(body);
+    if (!result.success) {
+      return NextResponse.json({ error: result.error.issues[0].message || "Invalid shipping zone data" }, { status: 400 });
     }
+    const { zoneName, countries, baseRate, priorityRate, minFreeShippingSubtotal } = result.data;
 
     // Check unique zoneName
     const existing = await ShippingZone.findOne({ zoneName });

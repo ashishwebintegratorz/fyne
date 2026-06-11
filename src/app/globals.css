@@ -29,6 +29,7 @@
 @theme {
   --font-serif: var(--font-serif), sans-serif;
   --font-sans: var(--font-sans), sans-serif;
+  --font-logo: var(--font-logo), cursive;
   
   --color-brand-primary: var(--brand-primary);
   --color-brand-foreground: var(--brand-foreground);

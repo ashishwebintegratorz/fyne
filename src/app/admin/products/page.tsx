@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import { 
-  Plus, 
-  Search, 
-  Edit, 
-  Trash2, 
-  X, 
-  Upload, 
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  X,
+  Upload,
   AlertTriangle,
   Layers,
   DollarSign,
@@ -38,11 +38,11 @@ export default function AdminProductsPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  
+
   // Modal states
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductType | null>(null);
-  
+
   // Form states
   const [productId, setProductId] = useState("");
   const [name, setName] = useState("");
@@ -186,8 +186,8 @@ export default function AdminProductsPage() {
     };
 
     try {
-      const url = editingProduct 
-        ? `/api/products/${editingProduct.productId}` 
+      const url = editingProduct
+        ? `/api/products/${editingProduct.productId}`
         : "/api/products";
       const method = editingProduct ? "PUT" : "POST";
 
@@ -236,8 +236,8 @@ export default function AdminProductsPage() {
 
   // Filter products by search and category
   const filteredProducts = products.filter(p => {
-    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          p.productId.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.productId.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === "all" || p.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -246,7 +246,7 @@ export default function AdminProductsPage() {
 
   return (
     <div className="space-y-8 text-left">
-      
+
       {/* 1. Page Title and Trigger Action */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -263,7 +263,7 @@ export default function AdminProductsPage() {
 
       {/* 2. Filters & Searches */}
       <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white dark:bg-[#0d0c0b] border border-brand-border p-4 rounded-xs">
-        
+
         {/* Search */}
         <div className="relative w-full md:max-w-md">
           <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-foreground/45" />
@@ -283,11 +283,10 @@ export default function AdminProductsPage() {
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 text-[9px] font-bold tracking-widest uppercase rounded-xs border cursor-pointer transition-colors ${
-                selectedCategory === cat
-                  ? "bg-brand-primary text-white border-brand-primary dark:bg-white dark:text-black dark:border-white"
-                  : "border-brand-border text-brand-foreground/60 hover:border-brand-primary"
-              }`}
+              className={`px-4 py-2 text-[9px] font-bold tracking-widest uppercase rounded-xs border cursor-pointer transition-colors ${selectedCategory === cat
+                ? "bg-brand-primary text-white border-brand-primary dark:bg-white dark:text-black dark:border-white"
+                : "border-brand-border text-brand-foreground/60 hover:border-brand-primary"
+                }`}
             >
               {cat}
             </button>
@@ -323,17 +322,17 @@ export default function AdminProductsPage() {
               </thead>
               <tbody>
                 {filteredProducts.map((prod) => (
-                  <tr 
-                    key={prod.productId} 
+                  <tr
+                    key={prod.productId}
                     className="border-b border-brand-border/40 hover:bg-brand-bg-gray/40 dark:hover:bg-zinc-900/20 transition-all align-middle"
                   >
                     {/* Image Preview */}
                     <td className="py-4 px-6">
                       <div className="w-12 h-16 bg-brand-bg-gray dark:bg-zinc-900 border border-brand-border rounded-xs flex items-center justify-center p-1 overflow-hidden relative">
                         {prod.images && prod.images.length > 0 ? (
-                          <img 
-                            src={prod.images[0]} 
-                            alt={prod.name} 
+                          <img
+                            src={prod.images[0]}
+                            alt={prod.name}
                             className="object-contain w-full h-full"
                           />
                         ) : (
@@ -414,13 +413,13 @@ export default function AdminProductsPage() {
       {/* 4. Slide-out / Modal Editor Pane */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/60 backdrop-blur-xs">
-          
+
           {/* Modal Background Dismiss */}
           <div className="absolute inset-0" onClick={() => setModalOpen(false)} />
-          
+
           {/* Form Content panel */}
           <div className="relative w-full max-w-2xl h-full bg-white dark:bg-[#0d0c0b] border-l border-brand-border shadow-2xl flex flex-col justify-between z-10 animate-slide-in">
-            
+
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-5 border-b border-brand-border">
               <div>
@@ -439,9 +438,9 @@ export default function AdminProductsPage() {
 
             {/* Scrollable Form Body */}
             <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
+
                 {/* Product SKU ID */}
                 <div className="space-y-2">
                   <label className="font-serif text-[10px] tracking-widest font-semibold uppercase text-brand-primary">Product SKU ID (Unique)</label>
@@ -544,7 +543,7 @@ export default function AdminProductsPage() {
               {/* Dynamic Image Uploads */}
               <div className="space-y-3">
                 <label className="font-serif text-[10px] tracking-widest font-semibold uppercase text-brand-primary block">Product Image Showcase</label>
-                
+
                 {/* Images list previews */}
                 <div className="flex flex-wrap gap-3 mb-2">
                   {images.map((imgUrl, idx) => (
@@ -559,7 +558,7 @@ export default function AdminProductsPage() {
                       </button>
                     </div>
                   ))}
-                  
+
                   {/* Upload button card */}
                   <button
                     type="button"
@@ -571,7 +570,7 @@ export default function AdminProductsPage() {
                     <span className="text-[8px] mt-1 font-bold">UPLOAD</span>
                   </button>
                 </div>
-                
+
                 <input
                   type="file"
                   multiple
@@ -585,14 +584,14 @@ export default function AdminProductsPage() {
               {/* Dynamic Benefits / Key Features */}
               <div className="space-y-3 p-4 border border-brand-border rounded-xs bg-brand-bg-gray/25 dark:bg-zinc-900/10">
                 <h4 className="font-serif text-[10px] tracking-widest font-semibold uppercase text-brand-heading">ATELIER CORE BENEFITS</h4>
-                
+
                 {/* Benefits List */}
                 <ul className="space-y-2">
                   {benefits.map((b, idx) => (
                     <li key={idx} className="flex justify-between items-center text-xs text-brand-foreground/80 pl-2 border-l border-brand-primary">
                       <span>{b}</span>
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={() => removeBenefit(idx)}
                         className="text-[9px] font-bold text-red-500 hover:underline cursor-pointer"
                       >
@@ -624,15 +623,15 @@ export default function AdminProductsPage() {
               {/* Dynamic FAQs */}
               <div className="space-y-3 p-4 border border-brand-border rounded-xs bg-brand-bg-gray/25 dark:bg-zinc-900/10">
                 <h4 className="font-serif text-[10px] tracking-widest font-semibold uppercase text-brand-heading">CLIENT CARE FAQS</h4>
-                
+
                 {/* FAQs List */}
                 <div className="space-y-3">
                   {faqs.map((faq, idx) => (
                     <div key={idx} className="p-3 border border-brand-border/40 bg-white dark:bg-[#0d0c0b] rounded-xs space-y-1 relative group text-xs text-left">
                       <h5 className="font-semibold text-brand-heading">Q: {faq.q}</h5>
                       <p className="text-brand-foreground/70">A: {faq.a}</p>
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={() => removeFaq(idx)}
                         className="absolute right-3 top-3 text-[9px] font-bold text-red-500 hover:underline cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
                       >

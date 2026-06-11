@@ -4,6 +4,7 @@ import Product from "@/models/Product";
 import ActivityLog from "@/models/ActivityLog";
 import { authenticateAdmin } from "@/lib/auth";
 import mongoose from "mongoose";
+import { ProductSchema } from "@/lib/schemas";
 
 // GET: Public fetch of single product
 export async function GET(
@@ -49,6 +50,11 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
+    const result = ProductSchema.partial().safeParse(body);
+    if (!result.success) {
+      return NextResponse.json({ error: result.error.issues[0].message || "Invalid input data" }, { status: 400 });
+    }
+    const validatedData = result.data;
 
     // Query to find by ID or productId
     const query = mongoose.isValidObjectId(id)
@@ -71,11 +77,11 @@ export async function PUT(
       "stock",
       "images",
       "status"
-    ];
+    ] as const;
 
     for (const field of fields) {
-      if (body[field] !== undefined) {
-        product[field] = body[field];
+      if (validatedData[field] !== undefined) {
+        product[field] = validatedData[field] as any;
         if (field === "images" || field === "benefits" || field === "faqs") {
           product.markModified(field);
         }

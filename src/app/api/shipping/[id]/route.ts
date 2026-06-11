@@ -3,6 +3,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import ShippingZone from "@/models/ShippingZone";
 import ActivityLog from "@/models/ActivityLog";
 import { authenticateAdmin } from "@/lib/auth";
+import { ShippingZoneSchema } from "@/lib/schemas";
 
 export async function PUT(
   request: Request,
@@ -18,16 +19,21 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
-    const zone = await ShippingZone.findById(id);
+    const result = ShippingZoneSchema.partial().safeParse(body);
+    if (!result.success) {
+      return NextResponse.json({ error: result.error.issues[0].message || "Invalid shipping zone details" }, { status: 400 });
+    }
+    const validatedData = result.data;
 
+    const zone = await ShippingZone.findById(id);
     if (!zone) {
       return NextResponse.json({ error: "Shipping zone not found" }, { status: 404 });
     }
 
-    const fields = ["zoneName", "countries", "baseRate", "priorityRate", "minFreeShippingSubtotal"];
+    const fields = ["zoneName", "countries", "baseRate", "priorityRate", "minFreeShippingSubtotal"] as const;
     for (const field of fields) {
-      if (body[field] !== undefined) {
-        zone[field] = body[field];
+      if (validatedData[field] !== undefined) {
+        zone[field] = validatedData[field] as any;
       }
     }
 

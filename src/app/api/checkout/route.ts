@@ -5,28 +5,21 @@ import Product from "@/models/Product";
 import Customer from "@/models/Customer";
 import Coupon from "@/models/Coupon";
 import ShippingZone from "@/models/ShippingZone";
+import { CheckoutSchema } from "@/lib/schemas";
 
 export async function POST(request: Request) {
   try {
     await connectToDatabase();
     
     const body = await request.json();
-    const { items, customerInfo, paymentProvider, shippingMethod, couponCode } = body;
-
-    // 1. Basic validation
-    if (!items || !Array.isArray(items) || items.length === 0) {
+    const result = CheckoutSchema.safeParse(body);
+    if (!result.success) {
       return NextResponse.json(
-        { error: "Cart items are required to process order." },
+        { error: result.error.issues[0].message || "Invalid checkout details" },
         { status: 400 }
       );
     }
-
-    if (!customerInfo || !customerInfo.email || !customerInfo.name) {
-      return NextResponse.json(
-        { error: "Customer details (name & email) are required." },
-        { status: 400 }
-      );
-    }
+    const { items, customerInfo, paymentProvider, shippingMethod, couponCode } = result.data;
 
     // 2. Resolve pricing from Database
     let subtotalUSD = 0;
@@ -47,7 +40,8 @@ export async function POST(request: Request) {
     for (const item of items) {
       // Find product by id/productId in database
       const product = await Product.findOne({ productId: item.productId });
-      const price = product ? product.price : (fallbackPrices[item.productId] || 85);
+      const basePrice = product ? product.price : (fallbackPrices[item.productId] || 85);
+      const price = basePrice + (item.giftWrap ? 10 : 0);
       
       subtotalUSD += price * item.quantity;
       
