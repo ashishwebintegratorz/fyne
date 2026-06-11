@@ -24,8 +24,8 @@ let cachedColors: any[] | null = null;
 let fetchPromise: Promise<any> | null = null;
 
 export default function PersonalizerPreview({
-  color,
-  initials,
+  color = "Cocoa Brown",
+  initials = "",
   className = "",
   size = "lg",
   foilColor = "gold",
@@ -60,12 +60,14 @@ export default function PersonalizerPreview({
     });
   }, [dbColors]);
 
+  const safeColor = color || "Cocoa Brown";
+
   // Dynamic color resolution
   const dbMatch = dbColors?.find(
-    (c) => c.name.toLowerCase() === color.toLowerCase()
+    (c) => c.name && safeColor && c.name.toLowerCase() === safeColor.toLowerCase()
   );
   
-  const imageSrc = dbMatch?.image || LEATHER_COLORS[color]?.image || "/products/cocoa-brown.jpg";
+  const imageSrc = dbMatch?.image || LEATHER_COLORS[safeColor]?.image || "/products/cocoa-brown.jpg";
 
   // Responsive scale configurations
   const scale = {
