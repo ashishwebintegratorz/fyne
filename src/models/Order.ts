@@ -20,6 +20,7 @@ const OrderSchema = new Schema(
         quantity: { type: Number, required: true, default: 1 },
         color: { type: String },
         initials: { type: String },
+        foilColor: { type: String, default: "gold" },
         giftWrap: { type: Boolean, default: false },
         image: { type: String }
       }

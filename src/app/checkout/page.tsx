@@ -610,6 +610,7 @@ export default function CheckoutPage() {
                           <PersonalizerPreview 
                             color={item.color} 
                             initials={item.initials} 
+                            foilColor={item.foilColor}
                             size="sm" 
                             className="scale-90"
                           />
@@ -620,7 +621,7 @@ export default function CheckoutPage() {
                       <div className="space-y-0.5 text-left">
                         <h4 className="font-sans text-xs font-semibold uppercase text-brand-heading">{item.name}</h4>
                         <p className="text-[10px] text-brand-foreground/50">Qty: {item.quantity} • {item.color}</p>
-                        {item.initials && <p className="text-[9px] text-brand-primary font-semibold tracking-widest uppercase">({item.initials})</p>}
+                        {item.initials && <p className="text-[9px] text-brand-primary font-semibold tracking-widest uppercase">({item.initials} - {item.foilColor || "gold"})</p>}
                         {item.giftWrap && <p className="text-[9px] text-emerald-600 dark:text-emerald-400 font-semibold tracking-wider uppercase">+ PREMIUM GIFT WRAP (+$10 USD)</p>}
                       </div>
                     </div>
