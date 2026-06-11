@@ -52,7 +52,6 @@ export async function POST(request: Request) {
         quantity: item.quantity,
         color: item.color || "",
         initials: item.initials || "",
-        foilColor: item.foilColor || "gold",
         giftWrap: item.giftWrap || false,
         image: item.image || ""
       });

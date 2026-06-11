@@ -426,7 +426,6 @@ export default function AdminOrdersPage() {
                             <PersonalizerPreview 
                               color={item.color || "Cocoa Brown"} 
                               initials={item.initials || "FN"} 
-                              foilColor={item.foilColor}
                               size="sm" 
                               className="scale-90"
                             />
@@ -439,7 +438,7 @@ export default function AdminOrdersPage() {
                           <p className="text-[10px] text-brand-foreground/50">Qty: {item.quantity} • Casing: {item.color || "None"}</p>
                           {item.initials && (
                             <p className="text-[9px] text-brand-primary font-bold tracking-widest uppercase">
-                              Stamper Monogram: ({item.initials} - {item.foilColor || "gold"})
+                              Stamper Monogram: ({item.initials})
                             </p>
                           )}
                         </div>

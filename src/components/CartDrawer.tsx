@@ -79,7 +79,6 @@ export default function CartDrawer() {
                       <PersonalizerPreview 
                         color={item.color || "Cocoa Brown"} 
                         initials={item.initials || ""} 
-                        foilColor={item.foilColor}
                         size="sm" 
                         className="w-full h-full"
                       />
@@ -93,7 +92,7 @@ export default function CartDrawer() {
                       </p>
                       {item.initials && (
                         <p className="text-[10px] text-brand-primary font-medium tracking-widest uppercase">
-                          MONOGRAM: {item.initials} ({item.foilColor || "gold"})
+                          MONOGRAM: {item.initials}
                         </p>
                       )}
                       {item.giftWrap && (

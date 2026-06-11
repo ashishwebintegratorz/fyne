@@ -59,8 +59,7 @@ export const useCartStore = create<CartStore>()(
       addItem: (item) =>
         set((state) => {
           const initialsClean = item.initials.trim().toUpperCase();
-          const foilClean = item.foilColor || "gold";
-          const generatedId = `${item.productId}-${item.color.replace(/\s+/g, "-").toLowerCase()}-${initialsClean || "none"}-${foilClean}`;
+          const generatedId = `${item.productId}-${item.color.replace(/\s+/g, "-").toLowerCase()}-${initialsClean || "none"}`;
           
           const existingIndex = state.cart.findIndex((i) => i.id === generatedId);
           if (existingIndex > -1) {
@@ -70,7 +69,7 @@ export const useCartStore = create<CartStore>()(
           }
           
           return {
-            cart: [...state.cart, { ...item, id: generatedId, initials: initialsClean, foilColor: foilClean }],
+            cart: [...state.cart, { ...item, id: generatedId, initials: initialsClean }],
           };
         }),
       removeItem: (id) =>
