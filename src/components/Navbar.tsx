@@ -334,7 +334,7 @@ export default function Navbar() {
                 {searchQuery.trim() === "" ? (
                   <div className="text-center py-12 space-y-2">
                     <p className="font-serif text-sm text-white/50 tracking-wider">Start typing to search the FYNÉ Collection</p>
-                    <p className="font-sans text-[10px] text-white/35 tracking-widest uppercase">Try "balm", "brown", "navy", "crocodile"</p>
+                    <p className="font-sans text-[10px] text-white/35 tracking-widest uppercase">Try &quot;balm&quot;, &quot;brown&quot;, &quot;navy&quot;, &quot;crocodile&quot;</p>
                   </div>
                 ) : loadingProducts ? (
                   <div className="flex justify-center items-center py-12">
@@ -342,7 +342,7 @@ export default function Navbar() {
                   </div>
                 ) : filteredProducts.length === 0 ? (
                   <div className="text-center py-12">
-                    <p className="font-serif text-sm text-white/55 tracking-wider">No products found matching "{searchQuery}"</p>
+                    <p className="font-serif text-sm text-white/55 tracking-wider">No products found matching &quot;{searchQuery}&quot;</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

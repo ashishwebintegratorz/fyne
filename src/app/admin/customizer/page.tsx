@@ -191,7 +191,7 @@ export default function AdminCustomizerPage() {
         </div>
       ) : colors.length === 0 ? (
         <div className="py-20 text-center text-brand-foreground/50 text-xs font-light border border-dashed border-brand-border bg-white dark:bg-[#0d0c0b] rounded-xs">
-          No casing options configured yet. Click "Add New Casing" to begin.
+          No casing options configured yet. Click &quot;Add New Casing&quot; to begin.
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

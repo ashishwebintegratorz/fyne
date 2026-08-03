@@ -90,7 +90,7 @@ export default function AboutPage() {
                 FYNÉ was created to elevate everyday essentials into pieces that feel special, pieces designed not only to look beautiful, but to become part of your daily rituals and travels.
               </p>
               <p className="font-sans text-xs font-light text-brand-foreground/75 leading-relaxed">
-                Whether it is the grounding touch of a customized leather casing in the palm of your hand before a meeting, or the structural elegance of a leather tote carrying your life's essentials through a terminal, our creations are designed to move with you. They bring a quiet sense of order, beauty, and luxury to the moments that define your days.
+                Whether it is the grounding touch of a customized leather casing in the palm of your hand before a meeting, or the structural elegance of a leather tote carrying your life&apos;s essentials through a terminal, our creations are designed to move with you. They bring a quiet sense of order, beauty, and luxury to the moments that define your days.
               </p>
             </div>
           </div>
@@ -116,7 +116,7 @@ export default function AboutPage() {
               Welcome to FYNÉ
             </h2>
             <p className="font-sans text-sm font-light tracking-wide text-brand-foreground/90 leading-relaxed max-w-2xl mx-auto italic">
-              "Where the essentials are never just essentials, and each piece tells a story."
+              &quot;Where the essentials are never just essentials, and each piece tells a story.&quot;
             </p>
           </div>
 

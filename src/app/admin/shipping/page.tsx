@@ -148,7 +148,7 @@ export default function AdminShippingPage() {
           <AlertCircle size={32} className="text-brand-foreground/45 mx-auto" />
           <h3 className="font-serif text-sm font-semibold tracking-wider text-brand-heading uppercase">No Custom Shipping Rules</h3>
           <p className="text-xs text-brand-foreground/60 leading-relaxed">
-            By default, OVIA's complimentary global signature delivery is active (Standard Base Rate: Free, Priority Monogram Delivery: $15). Add custom zones below to set specific rates by country.
+            By default, OVIA&apos;s complimentary global signature delivery is active (Standard Base Rate: Free, Priority Monogram Delivery: $15). Add custom zones below to set specific rates by country.
           </p>
         </div>
       ) : (

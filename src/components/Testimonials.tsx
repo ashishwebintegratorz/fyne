@@ -64,7 +64,7 @@ export default function Testimonials() {
               className="space-y-6"
             >
               <blockquote className="font-serif text-lg md:text-2xl font-light tracking-wide leading-relaxed italic max-w-3xl mx-auto">
-                "{TESTIMONIALS[activeIndex].quote}"
+                &quot;{TESTIMONIALS[activeIndex].quote}&quot;
               </blockquote>
               
               <div className="space-y-1">

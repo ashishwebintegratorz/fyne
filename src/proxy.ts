@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Protect all /admin routes except the login page
@@ -9,7 +9,7 @@ export function middleware(request: NextRequest) {
     const adminToken = request.cookies.get("admin_token")?.value;
 
     if (!adminToken) {
-      console.log(`[Middleware] Unauthorized access to ${pathname}. Redirecting to /admin/login.`);
+      console.log(`[Proxy] Unauthorized access to ${pathname}. Redirecting to /admin/login.`);
       const url = request.nextUrl.clone();
       url.pathname = "/admin/login";
       // Save original URL to redirect back after login if desired
