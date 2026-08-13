@@ -14,13 +14,13 @@ export async function GET(
   try {
     await connectToDatabase();
     const { id } = await params;
+    const decodedId = decodeURIComponent(id).trim();
 
-    // Search by Mongoose ObjectId if valid, else search by productId slug
     let query = {};
-    if (mongoose.isValidObjectId(id)) {
-      query = { $or: [{ _id: id }, { productId: id }] };
+    if (mongoose.isValidObjectId(decodedId)) {
+      query = { $or: [{ _id: decodedId }, { productId: decodedId }, { productId: decodedId.toLowerCase() }] };
     } else {
-      query = { productId: id };
+      query = { $or: [{ productId: decodedId }, { productId: decodedId.toLowerCase() }] };
     }
 
     const product = await Product.findOne(query);
@@ -49,6 +49,7 @@ export async function PUT(
     }
 
     const { id } = await params;
+    const decodedId = decodeURIComponent(id).trim();
     const body = await request.json();
     const result = ProductSchema.partial().safeParse(body);
     if (!result.success) {
@@ -57,9 +58,9 @@ export async function PUT(
     const validatedData = result.data;
 
     // Query to find by ID or productId
-    const query = mongoose.isValidObjectId(id)
-      ? { $or: [{ _id: id }, { productId: id }] }
-      : { productId: id };
+    const query = mongoose.isValidObjectId(decodedId)
+      ? { $or: [{ _id: decodedId }, { productId: decodedId }, { productId: decodedId.toLowerCase() }] }
+      : { $or: [{ productId: decodedId }, { productId: decodedId.toLowerCase() }] };
 
     const product = await Product.findOne(query);
     if (!product) {
@@ -90,19 +91,23 @@ export async function PUT(
 
     await product.save();
 
-    // Log update
-    await ActivityLog.create({
-      adminEmail: decoded.email,
-      action: "PRODUCT_UPDATE",
-      details: `Updated product: ${product.name} (${product.productId})`,
-      ipAddress: request.headers.get("x-forwarded-for") || "127.0.0.1"
-    });
+    // Log update safely
+    try {
+      await ActivityLog.create({
+        adminEmail: decoded?.email || "admin@fyneae.com",
+        action: "PRODUCT_UPDATE",
+        details: `Updated product: ${product.name} (${product.productId})`,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "127.0.0.1"
+      });
+    } catch (logErr) {
+      console.error("ActivityLog error (non-fatal):", logErr);
+    }
 
     return NextResponse.json({ success: true, product });
 
   } catch (err: any) {
     console.error("PUT Product Error:", err);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: err?.message || "Internal Server Error" }, { status: 500 });
   }
 }
 
@@ -120,27 +125,32 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    const query = mongoose.isValidObjectId(id)
-      ? { $or: [{ _id: id }, { productId: id }] }
-      : { productId: id };
+    const decodedId = decodeURIComponent(id).trim();
+    const query = mongoose.isValidObjectId(decodedId)
+      ? { $or: [{ _id: decodedId }, { productId: decodedId }, { productId: decodedId.toLowerCase() }] }
+      : { $or: [{ productId: decodedId }, { productId: decodedId.toLowerCase() }] };
 
     const product = await Product.findOneAndDelete(query);
     if (!product) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    // Log deletion
-    await ActivityLog.create({
-      adminEmail: decoded.email,
-      action: "PRODUCT_DELETE",
-      details: `Deleted product: ${product.name} (${product.productId})`,
-      ipAddress: request.headers.get("x-forwarded-for") || "127.0.0.1"
-    });
+    // Log deletion safely
+    try {
+      await ActivityLog.create({
+        adminEmail: decoded?.email || "admin@fyneae.com",
+        action: "PRODUCT_DELETE",
+        details: `Deleted product: ${product.name} (${product.productId})`,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "127.0.0.1"
+      });
+    } catch (logErr) {
+      console.error("ActivityLog error (non-fatal):", logErr);
+    }
 
     return NextResponse.json({ success: true, message: "Product deleted successfully" });
 
   } catch (err: any) {
     console.error("DELETE Product Error:", err);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: err?.message || "Internal Server Error" }, { status: 500 });
   }
 }

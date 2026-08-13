@@ -39,17 +39,21 @@ export async function PUT(
 
     await zone.save();
 
-    await ActivityLog.create({
-      adminEmail: decoded.email,
-      action: "SHIPPING_ZONE_UPDATE",
-      details: `Updated shipping zone: ${zone.zoneName}`,
-      ipAddress: request.headers.get("x-forwarded-for") || "127.0.0.1"
-    });
+    try {
+      await ActivityLog.create({
+        adminEmail: decoded?.email || "admin@fyneae.com",
+        action: "SHIPPING_ZONE_UPDATE",
+        details: `Updated shipping zone: ${zone.zoneName}`,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "127.0.0.1"
+      });
+    } catch (logErr) {
+      console.error("ActivityLog error (non-fatal):", logErr);
+    }
 
     return NextResponse.json({ success: true, zone });
   } catch (err: any) {
     console.error("PUT Shipping Zone Error:", err);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: err?.message || "Internal Server Error" }, { status: 500 });
   }
 }
 
@@ -72,16 +76,20 @@ export async function DELETE(
       return NextResponse.json({ error: "Shipping zone not found" }, { status: 404 });
     }
 
-    await ActivityLog.create({
-      adminEmail: decoded.email,
-      action: "SHIPPING_ZONE_DELETE",
-      details: `Deleted shipping zone: ${zone.zoneName}`,
-      ipAddress: request.headers.get("x-forwarded-for") || "127.0.0.1"
-    });
+    try {
+      await ActivityLog.create({
+        adminEmail: decoded?.email || "admin@fyneae.com",
+        action: "SHIPPING_ZONE_DELETE",
+        details: `Deleted shipping zone: ${zone.zoneName}`,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "127.0.0.1"
+      });
+    } catch (logErr) {
+      console.error("ActivityLog error (non-fatal):", logErr);
+    }
 
     return NextResponse.json({ success: true, message: "Shipping zone deleted successfully" });
   } catch (err: any) {
     console.error("DELETE Shipping Zone Error:", err);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: err?.message || "Internal Server Error" }, { status: 500 });
   }
 }

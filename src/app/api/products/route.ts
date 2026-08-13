@@ -41,15 +41,18 @@ export async function POST(request: Request) {
     }
 
     const { productId, name, price, description, benefits, faqs, category, stock, images, status } = result.data;
+    const cleanProductId = productId.toLowerCase().trim().replace(/[^a-z0-9-]/g, "") || productId;
 
     // Check unique productId
-    const existing = await Product.findOne({ productId });
+    const existing = await Product.findOne({
+      $or: [{ productId: cleanProductId }, { productId }]
+    });
     if (existing) {
-      return NextResponse.json({ error: "A product with this Product ID already exists." }, { status: 400 });
+      return NextResponse.json({ error: `A product with SKU ID "${cleanProductId}" already exists.` }, { status: 400 });
     }
 
     const newProduct = new Product({
-      productId,
+      productId: cleanProductId,
       name,
       price,
       description,
@@ -63,18 +66,22 @@ export async function POST(request: Request) {
 
     await newProduct.save();
 
-    // Log action
-    await ActivityLog.create({
-      adminEmail: decoded.email,
-      action: "PRODUCT_CREATE",
-      details: `Created product: ${name} (${productId})`,
-      ipAddress: request.headers.get("x-forwarded-for") || "127.0.0.1"
-    });
+    // Log action safely
+    try {
+      await ActivityLog.create({
+        adminEmail: decoded?.email || "admin@fyneae.com",
+        action: "PRODUCT_CREATE",
+        details: `Created product: ${name} (${cleanProductId})`,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "127.0.0.1"
+      });
+    } catch (logErr) {
+      console.error("ActivityLog error (non-fatal):", logErr);
+    }
 
     return NextResponse.json({ success: true, product: newProduct }, { status: 201 });
 
   } catch (err: any) {
     console.error("POST Product Error:", err);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: err?.message || "Internal Server Error" }, { status: 500 });
   }
 }

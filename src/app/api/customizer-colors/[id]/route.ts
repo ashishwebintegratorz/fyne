@@ -47,18 +47,22 @@ export async function PUT(
 
     await colorItem.save();
 
-    // Log update
-    await ActivityLog.create({
-      adminEmail: decoded.email,
-      action: "CUSTOMIZER_COLOR_UPDATE",
-      details: `Updated customizer casing: ${colorItem.name} (${colorItem.hex})`,
-      ipAddress: request.headers.get("x-forwarded-for") || "127.0.0.1"
-    });
+    // Log update safely
+    try {
+      await ActivityLog.create({
+        adminEmail: decoded?.email || "admin@fyneae.com",
+        action: "CUSTOMIZER_COLOR_UPDATE",
+        details: `Updated customizer casing: ${colorItem.name} (${colorItem.hex})`,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "127.0.0.1"
+      });
+    } catch (logErr) {
+      console.error("ActivityLog error (non-fatal):", logErr);
+    }
 
     return NextResponse.json({ success: true, color: colorItem });
   } catch (err: any) {
     console.error("PUT Customizer Color Error:", err);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: err?.message || "Internal Server Error" }, { status: 500 });
   }
 }
 
@@ -86,17 +90,21 @@ export async function DELETE(
       return NextResponse.json({ error: "Casing color not found" }, { status: 404 });
     }
 
-    // Log deletion
-    await ActivityLog.create({
-      adminEmail: decoded.email,
-      action: "CUSTOMIZER_COLOR_DELETE",
-      details: `Deleted customizer casing: ${colorItem.name} (${colorItem.hex})`,
-      ipAddress: request.headers.get("x-forwarded-for") || "127.0.0.1"
-    });
+    // Log deletion safely
+    try {
+      await ActivityLog.create({
+        adminEmail: decoded?.email || "admin@fyneae.com",
+        action: "CUSTOMIZER_COLOR_DELETE",
+        details: `Deleted customizer casing: ${colorItem.name} (${colorItem.hex})`,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "127.0.0.1"
+      });
+    } catch (logErr) {
+      console.error("ActivityLog error (non-fatal):", logErr);
+    }
 
     return NextResponse.json({ success: true, message: "Casing color deleted successfully" });
   } catch (err: any) {
     console.error("DELETE Customizer Color Error:", err);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: err?.message || "Internal Server Error" }, { status: 500 });
   }
 }

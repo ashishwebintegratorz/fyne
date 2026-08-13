@@ -72,26 +72,37 @@ export default function AdminShippingPage() {
     }
   };
 
-  // Submit Create Shipping Zone
+  // Saving state
+  const [savingZone, setSavingZone] = useState(false);
+
+  // Submit Create Zone
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const parsedCountries = countriesInput
-      .split(",")
-      .map(c => c.trim())
-      .filter(c => c.length > 0);
-
-    if (parsedCountries.length === 0) {
-      alert("Please enter at least one country name.");
+    const cleanZoneName = zoneName.trim();
+    if (!cleanZoneName || cleanZoneName.length < 2) {
+      alert("Zone Name must be at least 2 characters long.");
       return;
     }
 
+    const countries = countriesInput
+      .split(",")
+      .map((c) => c.trim())
+      .filter((c) => c.length > 0);
+
+    if (countries.length === 0) {
+      alert("Please enter at least one country name (comma separated).");
+      return;
+    }
+
+    setSavingZone(true);
+
     const payload = {
-      zoneName,
-      countries: parsedCountries,
-      baseRate,
-      priorityRate,
-      minFreeShippingSubtotal
+      zoneName: cleanZoneName,
+      countries,
+      baseRate: Number(baseRate) || 0,
+      priorityRate: Number(priorityRate) || 0,
+      minFreeShippingSubtotal: Number(minFreeShippingSubtotal) || 0
     };
 
     try {
@@ -101,7 +112,7 @@ export default function AdminShippingPage() {
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (res.ok) {
         setModalOpen(false);
@@ -117,6 +128,9 @@ export default function AdminShippingPage() {
       }
     } catch (err) {
       console.error("Create zone submit error:", err);
+      alert("Network error: Could not create shipping zone.");
+    } finally {
+      setSavingZone(false);
     }
   };
 
@@ -240,7 +254,7 @@ export default function AdminShippingPage() {
             </div>
 
             {/* Form Fields body */}
-            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6 text-left">
+            <form id="shipping-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6 text-left">
               
               {/* Zone Name */}
               <div className="space-y-2">
@@ -334,11 +348,19 @@ export default function AdminShippingPage() {
                 CANCEL
               </button>
               <button
-                type="button"
-                onClick={handleSubmit}
-                className="btn-primary py-3 px-8 text-[10px]"
+                type="submit"
+                form="shipping-form"
+                disabled={savingZone}
+                className="btn-primary py-3 px-8 text-[10px] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
-                SAVE LOGISTICS RULE
+                {savingZone ? (
+                  <>
+                    <span className="w-3 h-3 border-2 border-white dark:border-black border-t-transparent rounded-full animate-spin" />
+                    SAVING LOGISTICS RULE...
+                  </>
+                ) : (
+                  "SAVE LOGISTICS RULE"
+                )}
               </button>
             </div>
 

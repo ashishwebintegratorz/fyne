@@ -63,13 +63,17 @@ export async function PUT(
 
     await order.save();
 
-    // Log the update
-    await ActivityLog.create({
-      adminEmail: decoded.email,
-      action: "ORDER_UPDATE",
-      details: `Updated order: ${order.orderReference} status from '${oldStatus}' to '${order.status}'`,
-      ipAddress: request.headers.get("x-forwarded-for") || "127.0.0.1"
-    });
+    // Log the update safely
+    try {
+      await ActivityLog.create({
+        adminEmail: decoded?.email || "admin@fyneae.com",
+        action: "ORDER_UPDATE",
+        details: `Updated order: ${order.orderReference} status from '${oldStatus}' to '${order.status}'`,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "127.0.0.1"
+      });
+    } catch (logErr) {
+      console.error("ActivityLog error (non-fatal):", logErr);
+    }
 
     // Update customer activity feed
     try {
@@ -89,6 +93,6 @@ export async function PUT(
 
   } catch (err: any) {
     console.error("PUT Order Error:", err);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: err?.message || "Internal Server Error" }, { status: 500 });
   }
 }

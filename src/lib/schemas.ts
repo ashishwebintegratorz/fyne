@@ -15,7 +15,7 @@ export const ProductSchema = z.object({
   ).default([]),
   category: z.string().trim().default("Lip Balm"),
   stock: z.number().int().min(0, "Stock cannot be negative").default(100),
-  images: z.array(z.string().url("Invalid image URL format").or(z.string().regex(/^\/[a-zA-Z0-9_\-\/]+\.[a-zA-Z0-9]+$/))).default([]),
+  images: z.array(z.string().min(1, "Invalid image path")).default([]),
   status: z.enum(["active", "draft"]).default("active"),
 });
 

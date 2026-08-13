@@ -134,22 +134,27 @@ export default function AdminOrdersPage() {
       "Order Date"
     ];
 
+    const escapeCsv = (val: string | number | undefined | null) => {
+      const str = val === null || val === undefined ? "" : String(val);
+      return `"${str.replace(/"/g, '""')}"`;
+    };
+
     // Rows
     const rows = filteredOrders.map(o => [
-      o.orderReference,
-      o.customerInfo.name,
-      o.customerInfo.email,
-      o.customerInfo.phone,
-      `"${o.customerInfo.address.replace(/"/g, '""')}"`,
-      o.customerInfo.city,
-      o.customerInfo.country,
-      o.subtotal,
-      o.shippingCost,
-      o.discount,
-      o.total,
-      o.status,
-      o.trackingNumber || "N/A",
-      new Date(o.createdAt).toISOString()
+      escapeCsv(o.orderReference),
+      escapeCsv(o.customerInfo.name),
+      escapeCsv(o.customerInfo.email),
+      escapeCsv(o.customerInfo.phone),
+      escapeCsv(o.customerInfo.address),
+      escapeCsv(o.customerInfo.city),
+      escapeCsv(o.customerInfo.country),
+      escapeCsv(o.subtotal),
+      escapeCsv(o.shippingCost),
+      escapeCsv(o.discount),
+      escapeCsv(o.total),
+      escapeCsv(o.status),
+      escapeCsv(o.trackingNumber || "N/A"),
+      escapeCsv(new Date(o.createdAt).toISOString())
     ]);
 
     const csvContent = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");

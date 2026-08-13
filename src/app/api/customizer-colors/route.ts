@@ -65,17 +65,21 @@ export async function POST(request: Request) {
 
     await newColor.save();
 
-    // Log action
-    await ActivityLog.create({
-      adminEmail: decoded.email,
-      action: "CUSTOMIZER_COLOR_CREATE",
-      details: `Created customizer casing: ${name} (${hex})`,
-      ipAddress: request.headers.get("x-forwarded-for") || "127.0.0.1"
-    });
+    // Log action safely
+    try {
+      await ActivityLog.create({
+        adminEmail: decoded?.email || "admin@fyneae.com",
+        action: "CUSTOMIZER_COLOR_CREATE",
+        details: `Created customizer casing: ${name} (${hex})`,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "127.0.0.1"
+      });
+    } catch (logErr) {
+      console.error("ActivityLog error (non-fatal):", logErr);
+    }
 
     return NextResponse.json({ success: true, color: newColor }, { status: 201 });
   } catch (err: any) {
     console.error("POST Customizer Color Error:", err);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: err?.message || "Internal Server Error" }, { status: 500 });
   }
 }

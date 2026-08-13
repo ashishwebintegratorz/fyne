@@ -45,17 +45,21 @@ export async function PUT(
 
     await coupon.save();
 
-    await ActivityLog.create({
-      adminEmail: decoded.email,
-      action: "COUPON_UPDATE",
-      details: `Updated coupon: ${coupon.code}`,
-      ipAddress: request.headers.get("x-forwarded-for") || "127.0.0.1"
-    });
+    try {
+      await ActivityLog.create({
+        adminEmail: decoded?.email || "admin@fyneae.com",
+        action: "COUPON_UPDATE",
+        details: `Updated coupon: ${coupon.code}`,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "127.0.0.1"
+      });
+    } catch (logErr) {
+      console.error("ActivityLog error (non-fatal):", logErr);
+    }
 
     return NextResponse.json({ success: true, coupon });
   } catch (err: any) {
     console.error("PUT Coupon Error:", err);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: err?.message || "Internal Server Error" }, { status: 500 });
   }
 }
 
@@ -78,16 +82,20 @@ export async function DELETE(
       return NextResponse.json({ error: "Coupon not found" }, { status: 404 });
     }
 
-    await ActivityLog.create({
-      adminEmail: decoded.email,
-      action: "COUPON_DELETE",
-      details: `Deleted coupon: ${coupon.code}`,
-      ipAddress: request.headers.get("x-forwarded-for") || "127.0.0.1"
-    });
+    try {
+      await ActivityLog.create({
+        adminEmail: decoded?.email || "admin@fyneae.com",
+        action: "COUPON_DELETE",
+        details: `Deleted coupon: ${coupon.code}`,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "127.0.0.1"
+      });
+    } catch (logErr) {
+      console.error("ActivityLog error (non-fatal):", logErr);
+    }
 
     return NextResponse.json({ success: true, message: "Coupon deleted successfully" });
   } catch (err: any) {
     console.error("DELETE Coupon Error:", err);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: err?.message || "Internal Server Error" }, { status: 500 });
   }
 }

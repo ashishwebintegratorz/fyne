@@ -59,18 +59,22 @@ export async function POST(request: Request) {
 
     await coupon.save();
 
-    // Log coupon creation
-    await ActivityLog.create({
-      adminEmail: decoded.email,
-      action: "COUPON_CREATE",
-      details: `Created coupon code: ${uppercaseCode} (${type}: ${value})`,
-      ipAddress: request.headers.get("x-forwarded-for") || "127.0.0.1"
-    });
+    // Log coupon creation safely
+    try {
+      await ActivityLog.create({
+        adminEmail: decoded?.email || "admin@fyneae.com",
+        action: "COUPON_CREATE",
+        details: `Created coupon code: ${uppercaseCode} (${type}: ${value})`,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "127.0.0.1"
+      });
+    } catch (logErr) {
+      console.error("ActivityLog error (non-fatal):", logErr);
+    }
 
     return NextResponse.json({ success: true, coupon }, { status: 201 });
 
   } catch (err: any) {
     console.error("POST Coupon Error:", err);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: err?.message || "Internal Server Error" }, { status: 500 });
   }
 }

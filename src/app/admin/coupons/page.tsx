@@ -99,14 +99,25 @@ export default function AdminCouponsPage() {
     }
   };
 
+  // Saving state
+  const [savingCoupon, setSavingCoupon] = useState(false);
+
   // Submit Create Coupon
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const cleanCode = code.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+    if (!cleanCode || cleanCode.length < 2) {
+      alert("Coupon code must be at least 2 characters long.");
+      return;
+    }
+
+    setSavingCoupon(true);
+
     const payload = {
-      code: code.trim().toUpperCase(),
+      code: cleanCode,
       type,
-      value,
+      value: Number(value) || 0,
       expirationDate: expirationDate || null,
       usageLimit: usageLimit !== "" ? parseInt(usageLimit.toString()) : null,
       active
@@ -119,7 +130,7 @@ export default function AdminCouponsPage() {
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (res.ok) {
         setModalOpen(false);
@@ -136,6 +147,9 @@ export default function AdminCouponsPage() {
       }
     } catch (err) {
       console.error("Create coupon submit error:", err);
+      alert("Network error: Could not create coupon.");
+    } finally {
+      setSavingCoupon(false);
     }
   };
 
@@ -322,7 +336,7 @@ export default function AdminCouponsPage() {
             </div>
 
             {/* Form Fields body */}
-            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6 text-left">
+            <form id="coupon-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6 text-left">
               
               {/* Code */}
               <div className="space-y-2">
@@ -434,11 +448,19 @@ export default function AdminCouponsPage() {
                 CANCEL
               </button>
               <button
-                type="button"
-                onClick={handleSubmit}
-                className="btn-primary py-3 px-8 text-[10px]"
+                type="submit"
+                form="coupon-form"
+                disabled={savingCoupon}
+                className="btn-primary py-3 px-8 text-[10px] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
-                SAVE CAMPAIGN
+                {savingCoupon ? (
+                  <>
+                    <span className="w-3 h-3 border-2 border-white dark:border-black border-t-transparent rounded-full animate-spin" />
+                    SAVING CAMPAIGN...
+                  </>
+                ) : (
+                  "SAVE CAMPAIGN"
+                )}
               </button>
             </div>
 

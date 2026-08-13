@@ -124,17 +124,20 @@ export default function AdminProductsPage() {
   const handleDelete = async (prod: ProductType) => {
     if (!confirm(`Are you sure you want to delete ${prod.name}?`)) return;
 
+    const targetId = encodeURIComponent(prod._id || prod.productId);
     try {
-      const res = await fetch(`/api/products/${prod.productId}`, {
+      const res = await fetch(`/api/products/${targetId}`, {
         method: "DELETE",
       });
+      const data = await res.json().catch(() => ({}));
       if (res.ok) {
         setProducts(prevProducts => prevProducts.filter(p => p.productId !== prod.productId && p._id !== prod._id));
       } else {
-        alert("Failed to delete product.");
+        alert(data.error || "Failed to delete product.");
       }
     } catch (err) {
       console.error("Delete error:", err);
+      alert("Network error: Could not reach the server to delete product.");
     }
   };
 
@@ -168,26 +171,67 @@ export default function AdminProductsPage() {
     }
   };
 
+  // Saving state
+  const [savingProduct, setSavingProduct] = useState(false);
+
   // Handle Form Submit (Create or Update)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // 1. Auto-collect typed benefit if user didn't click "ADD"
+    let currentBenefits = [...benefits];
+    if (newBenefit.trim()) {
+      currentBenefits.push(newBenefit.trim());
+      setNewBenefit("");
+    }
+    currentBenefits = currentBenefits.filter(b => b.trim().length > 0);
+
+    // 2. Auto-collect typed FAQ if user didn't click "ADD FAQ"
+    let currentFaqs = [...faqs];
+    if (newFaqQ.trim() && newFaqA.trim()) {
+      currentFaqs.push({ q: newFaqQ.trim(), a: newFaqA.trim() });
+      setNewFaqQ("");
+      setNewFaqA("");
+    }
+    currentFaqs = currentFaqs.filter(f => f.q && f.q.trim().length >= 2 && f.a && f.a.trim().length >= 2);
+
+    const cleanId = productId.toLowerCase().trim().replace(/[^a-z0-9-]/g, "");
+    if (!cleanId || cleanId.length < 2) {
+      alert("Product SKU ID must be at least 2 characters long (e.g. cocoa-brown).");
+      return;
+    }
+
+    if (!name.trim() || name.trim().length < 2) {
+      alert("Display Name must be at least 2 characters long.");
+      return;
+    }
+
+    if (!description.trim() || description.trim().length < 5) {
+      alert("Description must be at least 5 characters long.");
+      return;
+    }
+
+    setSavingProduct(true);
+
     const payload = {
-      productId,
-      name,
-      price,
-      description,
-      benefits,
-      faqs,
-      category,
-      stock,
+      productId: cleanId,
+      name: name.trim(),
+      price: Number(price) || 0,
+      description: description.trim(),
+      benefits: currentBenefits,
+      faqs: currentFaqs,
+      category: (category || "Lip Balm").trim(),
+      stock: Number(stock) || 0,
       images,
       status
     };
 
     try {
+      const targetId = editingProduct
+        ? encodeURIComponent(editingProduct._id || editingProduct.productId)
+        : "";
       const url = editingProduct
-        ? `/api/products/${editingProduct.productId}`
+        ? `/api/products/${targetId}`
         : "/api/products";
       const method = editingProduct ? "PUT" : "POST";
 
@@ -197,7 +241,7 @@ export default function AdminProductsPage() {
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (res.ok) {
         setModalOpen(false);
@@ -207,6 +251,9 @@ export default function AdminProductsPage() {
       }
     } catch (err) {
       console.error("Submit error:", err);
+      alert("Network error: Could not save product.");
+    } finally {
+      setSavingProduct(false);
     }
   };
 
@@ -437,7 +484,7 @@ export default function AdminProductsPage() {
             </div>
 
             {/* Scrollable Form Body */}
-            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+            <form id="product-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -462,7 +509,13 @@ export default function AdminProductsPage() {
                     type="text"
                     required
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setName(val);
+                      if (!editingProduct) {
+                        setProductId(val.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""));
+                      }
+                    }}
                     className="w-full bg-white dark:bg-[#0d0c0b] border border-brand-border focus:border-brand-primary text-xs pl-4 pr-4 py-3 rounded-xs uppercase focus:outline-hidden"
                     placeholder="e.g. Cocoa Brown Crocodile Set"
                   />
@@ -679,11 +732,19 @@ export default function AdminProductsPage() {
                 CANCEL
               </button>
               <button
-                type="button"
-                onClick={handleSubmit}
-                className="btn-primary py-3 px-8 text-[10px]"
+                type="submit"
+                form="product-form"
+                disabled={savingProduct}
+                className="btn-primary py-3 px-8 text-[10px] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
-                SAVE CATALOG ITEM
+                {savingProduct ? (
+                  <>
+                    <span className="w-3 h-3 border-2 border-white dark:border-black border-t-transparent rounded-full animate-spin" />
+                    SAVING CATALOG ITEM...
+                  </>
+                ) : (
+                  "SAVE CATALOG ITEM"
+                )}
               </button>
             </div>
 

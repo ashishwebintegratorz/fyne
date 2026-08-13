@@ -123,6 +123,9 @@ export default function AdminCustomizerPage() {
     }
   };
 
+  // Saving state
+  const [savingCasing, setSavingCasing] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -131,7 +134,9 @@ export default function AdminCustomizerPage() {
       return;
     }
 
-    const payload = { name, hex, image, desc };
+    setSavingCasing(true);
+
+    const payload = { name: name.trim(), hex: hex.trim(), image: image.trim(), desc: desc.trim() };
 
     try {
       const url = editingColor 
@@ -145,7 +150,7 @@ export default function AdminCustomizerPage() {
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (res.ok) {
         setModalOpen(false);
@@ -154,7 +159,10 @@ export default function AdminCustomizerPage() {
         alert(data.error || "Save operation failed.");
       }
     } catch (err) {
-      console.error("Submit customizer color error:", err);
+      console.error("Submit error:", err);
+      alert("Network error: Could not save customizer casing.");
+    } finally {
+      setSavingCasing(false);
     }
   };
 
@@ -280,7 +288,7 @@ export default function AdminCustomizerPage() {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+            <form id="customizer-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
               
               {/* Casing Name */}
               <div className="space-y-2">
@@ -392,11 +400,19 @@ export default function AdminCustomizerPage() {
                 CANCEL
               </button>
               <button
-                type="button"
-                onClick={handleSubmit}
-                className="btn-primary py-3 px-8 text-[10px] cursor-pointer"
+                type="submit"
+                form="customizer-form"
+                disabled={savingCasing}
+                className="btn-primary py-3 px-8 text-[10px] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
-                SAVE CASING OPTION
+                {savingCasing ? (
+                  <>
+                    <span className="w-3 h-3 border-2 border-white dark:border-black border-t-transparent rounded-full animate-spin" />
+                    SAVING CASING OPTION...
+                  </>
+                ) : (
+                  "SAVE CASING OPTION"
+                )}
               </button>
             </div>
 

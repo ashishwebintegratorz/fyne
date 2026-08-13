@@ -116,6 +116,30 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: "Audit Logs", href: "/admin/logs", icon: ShieldCheck },
   ];
 
+  const getHeaderTitle = (path: string) => {
+    const segment = path.split("/").pop();
+    switch (segment) {
+      case "admin":
+        return "EXECUTIVE OVERVIEW";
+      case "products":
+        return "PRODUCT CATALOG";
+      case "orders":
+        return "FULFILLMENT QUEUE";
+      case "customers":
+        return "CLIENTELE PROFILES";
+      case "coupons":
+        return "DISCOUNT PROMOTIONS";
+      case "shipping":
+        return "SHIPPING & ZONES";
+      case "customizer":
+        return "CUSTOMIZER CASINGS";
+      case "logs":
+        return "AUDIT TRAIL LOGS";
+      default:
+        return (segment || "WORKSPACE").replace(/-/g, " ").toUpperCase();
+    }
+  };
+
   return (
     <div className="min-h-screen flex bg-brand-bg-gray dark:bg-[#080808] text-brand-foreground font-sans transition-colors duration-300">
       
@@ -213,7 +237,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="text-left">
               <span className="text-[10px] tracking-widest font-semibold uppercase text-brand-foreground/50 font-sans">WORKSPACE PANEL</span>
               <h2 className="font-serif text-sm font-semibold tracking-wider text-brand-heading uppercase">
-                {pathname.split("/").pop() === "admin" ? "EXECUTIVE OVERVIEW" : pathname.split("/").pop()}
+                {getHeaderTitle(pathname)}
               </h2>
             </div>
           </div>

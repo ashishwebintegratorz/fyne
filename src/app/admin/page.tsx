@@ -294,7 +294,7 @@ export default function AdminDashboardPage() {
                       textAnchor="end" 
                       className="font-mono text-[8px] fill-brand-foreground font-semibold"
                     >
-                      ${line.val}
+                      {convertAndFormatPrice(line.val, currency)}
                     </text>
                   </g>
                 ))}

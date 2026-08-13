@@ -56,18 +56,22 @@ export async function POST(request: Request) {
 
     await zone.save();
 
-    // Log action
-    await ActivityLog.create({
-      adminEmail: decoded.email,
-      action: "SHIPPING_ZONE_CREATE",
-      details: `Created shipping zone: ${zoneName}`,
-      ipAddress: request.headers.get("x-forwarded-for") || "127.0.0.1"
-    });
+    // Log action safely
+    try {
+      await ActivityLog.create({
+        adminEmail: decoded?.email || "admin@fyneae.com",
+        action: "SHIPPING_ZONE_CREATE",
+        details: `Created shipping zone: ${zoneName}`,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "127.0.0.1"
+      });
+    } catch (logErr) {
+      console.error("ActivityLog error (non-fatal):", logErr);
+    }
 
     return NextResponse.json({ success: true, zone }, { status: 201 });
 
   } catch (err: any) {
     console.error("POST Shipping Zone Error:", err);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: err?.message || "Internal Server Error" }, { status: 500 });
   }
 }
