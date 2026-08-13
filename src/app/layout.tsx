@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Josefin_Sans, Inter, Pinyon_Script } from "next/font/google";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
 import OfferBannerModal from "@/components/OfferBannerModal";
 import Providers from "@/components/Providers";
@@ -56,6 +57,7 @@ export default function RootLayout({
           <main className="flex-grow flex flex-col">
             {children}
           </main>
+          <Footer />
         </Providers>
       </body>
     </html>

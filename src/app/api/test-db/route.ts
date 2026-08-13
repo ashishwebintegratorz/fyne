@@ -12,19 +12,6 @@ export async function GET() {
   try {
     await connectToDatabase();
 
-    // 1. Seed default Admin if empty
-    const adminCount = await Admin.countDocuments();
-    if (adminCount === 0) {
-      const defaultAdmin = new Admin({
-        name: "Fyné Administrator",
-        email: "admin@fyne.com",
-        password: "admin123",
-        role: "superadmin"
-      });
-      await defaultAdmin.save();
-      console.log("Diag: Seeded default admin admin@fyne.com / admin123");
-    }
-
     // 2. Seed default Coupon if empty
     const couponCount = await Coupon.countDocuments();
     if (couponCount === 0) {

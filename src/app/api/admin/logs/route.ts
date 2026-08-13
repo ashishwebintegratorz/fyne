@@ -3,6 +3,8 @@ import { connectToDatabase } from "@/lib/mongodb";
 import ActivityLog from "@/models/ActivityLog";
 import { authenticateAdmin } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: Request) {
   try {
     await connectToDatabase();

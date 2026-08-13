@@ -135,8 +135,8 @@ export async function POST(request: Request) {
       discount: discountUSD,
       total: totalUSD,
       currency: "USD",
-      paymentProvider: paymentProvider || "mock",
-      paymentStatus: "paid", // Set as paid for simulation checkout
+      paymentProvider: paymentProvider || "cod",
+      paymentStatus: paymentProvider === "cod" ? "cod_pending" : "paid",
       shippingMethod: shippingMethod || "standard",
       status: "pending"
     });

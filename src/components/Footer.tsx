@@ -23,7 +23,7 @@ export default function Footer() {
         {/* Copyright notice */}
         <div className="space-y-2">
           <p className="font-light tracking-[0.15em]">
-            © {new Date().getFullYear()} FYNÉ, Powered by Shopify
+            © {new Date().getFullYear()} FYNÉ
           </p>
           <div className="flex justify-center space-x-6 text-[10px] tracking-[0.1em] text-brand-foreground/55 font-light pt-2">
             <button className="hover:text-brand-primary cursor-pointer">Terms & Conditions</button>
@@ -32,6 +32,17 @@ export default function Footer() {
             <span>•</span>
             <button className="hover:text-brand-primary cursor-pointer">Refund Policy</button>
           </div>
+          <p className="text-[10px] tracking-[0.15em] text-brand-foreground/70 font-light pt-3 lowercase first-letter:uppercase">
+            Website Designed with ❤️ by{" "}
+            <a
+              href="https://webintegratorz.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-brand-primary underline underline-offset-4 font-semibold text-brand-heading normal-case transition-colors"
+            >
+              Webintegratorz Technologies
+            </a>
+          </p>
         </div>
 
       </div>

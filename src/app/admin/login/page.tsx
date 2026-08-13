@@ -46,8 +46,8 @@ function AdminLoginContent() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        // Authenticated! Redirect
-        router.push(redirectUrl);
+        // Authenticated! Perform full page load redirect to guarantee cookie sync
+        window.location.href = redirectUrl;
       } else {
         setError(data.error || "Authentication failed. Please verify credentials.");
       }
@@ -91,7 +91,7 @@ function AdminLoginContent() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full bg-zinc-900 border border-zinc-800 focus:border-white focus:outline-hidden text-xs text-zinc-200 tracking-wider pl-11 pr-4 py-3.5 rounded-xs placeholder-zinc-600 transition-colors"
-              placeholder="e.g. admin@fyne.com"
+              placeholder="e.g. admin@fyneae.com"
             />
           </div>
         </div>
@@ -131,7 +131,7 @@ function AdminLoginContent() {
 
       {/* Security notice footer */}
       <div className="pt-2 text-[9px] text-zinc-500 tracking-wide leading-relaxed font-sans border-t border-zinc-900">
-        Default testing credentials: <strong className="text-zinc-400">admin@fyne.com</strong> / <strong className="text-zinc-400">admin123</strong>. Session audits are recorded automatically.
+        Authorized Atelier Concierge Personnel Only. All session activities and IP access attempts are monitored and recorded.
       </div>
     </div>
   );

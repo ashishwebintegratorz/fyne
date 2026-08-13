@@ -77,11 +77,13 @@ export default function PersonalizerPreview({
     xl: "w-80 h-80",
   }[size];
 
+  const is4Chars = initials && initials.length > 3;
+
   const specs = {
-    sm: { fontSize: "14px", letterSpacing: "0.12em", translateY: "-7px" },
-    md: { fontSize: "24px", letterSpacing: "0.16em", translateY: "-13px" },
-    lg: { fontSize: "36px", letterSpacing: "0.20em", translateY: "-21px" },
-    xl: { fontSize: "48px", letterSpacing: "0.25em", translateY: "-28px" },
+    sm: { fontSize: is4Chars ? "11px" : "14px", letterSpacing: is4Chars ? "0.08em" : "0.12em", translateY: "-7px" },
+    md: { fontSize: is4Chars ? "19px" : "24px", letterSpacing: is4Chars ? "0.10em" : "0.16em", translateY: "-13px" },
+    lg: { fontSize: is4Chars ? "28px" : "36px", letterSpacing: is4Chars ? "0.12em" : "0.20em", translateY: "-21px" },
+    xl: { fontSize: is4Chars ? "38px" : "48px", letterSpacing: is4Chars ? "0.14em" : "0.25em", translateY: "-28px" },
   }[size];
 
   return (

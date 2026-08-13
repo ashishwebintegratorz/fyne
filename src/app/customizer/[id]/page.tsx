@@ -336,19 +336,19 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 {/* 2. Monogram text input */}
                 <div className="space-y-4">
                   <h4 className="font-serif text-[11px] font-semibold tracking-wider uppercase text-brand-heading">
-                    2. ADD HOT-STAMP MONOGRAM (MAX 3 LETTERS)
+                    2. ADD HOT-STAMP MONOGRAM (MAX 4 LETTERS)
                   </h4>
                   
                   <div className="flex flex-col sm:flex-row sm:items-center gap-6">
                     <input
                       type="text"
-                      maxLength={3}
+                      maxLength={4}
                       value={initials}
                       onChange={(e) => {
                         setInitials(e.target.value.toUpperCase().replace(/[^A-Z]/g, ""));
                         setCustomized(true);
                       }}
-                      placeholder="E.G. FN"
+                      placeholder="E.G. FYNE"
                       className="bg-white dark:bg-[#0d0c0b] border border-brand-border focus:border-brand-primary font-serif tracking-[0.2em] text-xs uppercase px-4 py-3 w-40 text-center rounded-xs focus:outline-hidden"
                     />
 

@@ -10,6 +10,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, CreditCard, ShieldCheck, CheckCircle2, ArrowLeft, Landmark } from "lucide-react";
 import PersonalizerPreview from "@/components/PersonalizerPreview";
 
+const GCC_COUNTRIES = [
+  "United Arab Emirates",
+  "Saudi Arabia",
+  "Qatar",
+  "Kuwait",
+  "Bahrain",
+  "Oman"
+] as const;
+
 // Checkout Validation Schema
 const checkoutSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -17,14 +26,9 @@ const checkoutSchema = z.object({
   lastName: z.string().min(2, "Last name is required"),
   address: z.string().min(5, "Address details are required"),
   city: z.string().min(2, "City name is required"),
-  country: z.string().min(2, "Country name is required"),
-  zipCode: z.string().min(3, "Zip code is required"),
+  country: z.enum(GCC_COUNTRIES),
+  zipCode: z.string().min(1, "Zip code is required"),
   phone: z.string().min(6, "Phone number is required"),
-  // Credit Card Info
-  cardName: z.string().optional(),
-  cardNumber: z.string().optional(),
-  cardExpiry: z.string().optional(),
-  cardCvv: z.string().optional(),
 });
 
 type CheckoutInput = z.infer<typeof checkoutSchema>;
@@ -34,7 +38,7 @@ export default function CheckoutPage() {
   const { cart, clearCart, currency } = useCartStore();
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [shippingMethod, setShippingMethod] = useState<"standard" | "priority">("standard");
-  const [paymentProvider, setPaymentProvider] = useState<"stripe" | "razorpay">("stripe");
+  const [paymentProvider] = useState<"cod">("cod");
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "processing" | "success">("idle");
   const [orderRef, setOrderRef] = useState("");
 
@@ -84,32 +88,30 @@ export default function CheckoutPage() {
   const {
     register,
     handleSubmit,
+    trigger,
     watch,
     formState: { errors },
   } = useForm<CheckoutInput>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
       country: "United Arab Emirates",
-      cardName: "",
-      cardNumber: "",
-      cardExpiry: "",
-      cardCvv: "",
+      zipCode: "00000",
     }
   });
 
-  // Watch inputs for the live premium credit card display
-  const watchedCardName = watch("cardName") || "CARDHOLDER NAME";
-  const watchedCardNum = watch("cardNumber") || "•••• •••• •••• ••••";
-  const watchedCardExp = watch("cardExpiry") || "MM/YY";
-  const watchedCardCvv = watch("cardCvv") || "•••";
   const watchedFirstName = watch("firstName") || "";
   const watchedLastName = watch("lastName") || "";
   const watchedAddress = watch("address") || "";
   const watchedCity = watch("city") || "";
 
-  const handleNextStep = () => {
-    if (step < 3) {
-      setStep((prev) => (prev + 1) as any);
+  const handleNextStep = async () => {
+    if (step === 1) {
+      const isValid = await trigger(["firstName", "lastName", "email", "address", "city", "country", "zipCode", "phone"]);
+      if (isValid) {
+        setStep(2);
+      }
+    } else if (step === 2) {
+      setStep(3);
     }
   };
 
@@ -117,6 +119,11 @@ export default function CheckoutPage() {
     if (step > 1) {
       setStep((prev) => (prev - 1) as any);
     }
+  };
+
+  const onInvalid = (formErrors: any) => {
+    console.warn("Validation errors on checkout submission:", formErrors);
+    setStep(1);
   };
 
   const processPayment = async (data: CheckoutInput) => {
@@ -270,13 +277,17 @@ export default function CheckoutPage() {
                         {errors.city && <p className="text-[10px] text-red-500">{errors.city.message}</p>}
                       </div>
                       <div className="space-y-2 text-left">
-                        <label className="font-serif text-[10px] tracking-widest font-semibold uppercase text-brand-primary">Country</label>
-                        <input
-                          type="text"
+                        <label className="font-serif text-[10px] tracking-widest font-semibold uppercase text-brand-primary">GCC Destination Country</label>
+                        <select
                           {...register("country")}
-                          className="w-full bg-white dark:bg-[#0d0c0b] border border-brand-border focus:border-brand-primary text-xs tracking-widest px-4 py-3 rounded-xs uppercase focus:outline-hidden"
-                          placeholder="United Arab Emirates"
-                        />
+                          className="w-full bg-white dark:bg-[#0d0c0b] border border-brand-border focus:border-brand-primary text-xs tracking-widest px-4 py-3 rounded-xs uppercase focus:outline-hidden text-brand-foreground cursor-pointer"
+                        >
+                          {GCC_COUNTRIES.map((c) => (
+                            <option key={c} value={c} className="bg-white dark:bg-[#121110] text-brand-foreground">
+                              {c}
+                            </option>
+                          ))}
+                        </select>
                         {errors.country && <p className="text-[10px] text-red-500">{errors.country.message}</p>}
                       </div>
                       <div className="space-y-2 text-left">
@@ -395,123 +406,25 @@ export default function CheckoutPage() {
                   className="space-y-8"
                 >
                   <div className="space-y-2 text-left">
-                    <h2 className="font-serif text-2xl tracking-wide uppercase text-brand-heading">Secure Payment</h2>
-                    <p className="text-xs text-brand-foreground/60">Fully encrypted Stripe & Razorpay-ready systems.</p>
+                    <h2 className="font-serif text-2xl tracking-wide uppercase text-brand-heading">Payment Method</h2>
+                    <p className="text-xs text-brand-foreground/60">Exclusive Cash on Delivery (COD) service for GCC destinations.</p>
                   </div>
 
-                  {/* Payment provider selector tabs */}
-                  <div className="grid grid-cols-2 gap-4 border-b border-brand-border pb-4">
-                    <button
-                      type="button"
-                      onClick={() => setPaymentProvider("stripe")}
-                      className={`py-3 rounded-xs border text-[10px] tracking-widest font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all ${
-                        paymentProvider === "stripe" 
-                          ? "border-brand-primary bg-brand-bg-gray dark:bg-zinc-900/10 text-brand-primary" 
-                          : "border-brand-border hover:border-brand-primary/25"
-                      }`}
-                    >
-                      <CreditCard size={14} /> STRIPE / APPLE PAY
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPaymentProvider("razorpay")}
-                      className={`py-3 rounded-xs border text-[10px] tracking-widest font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all ${
-                        paymentProvider === "razorpay" 
-                          ? "border-brand-primary bg-brand-bg-gray dark:bg-zinc-900/10 text-brand-primary" 
-                          : "border-brand-border hover:border-brand-primary/25"
-                      }`}
-                    >
-                      <Landmark size={14} /> RAZORPAY / UPI
-                    </button>
-                  </div>
-
-                  {/* Credit Card Graphic (Stripe Option) */}
-                  {paymentProvider === "stripe" && (
-                    <div className="relative w-full max-w-sm aspect-[1.58/1] bg-gradient-to-br from-[#111111] via-[#222222] to-[#000000] rounded-lg p-6 shadow-md border border-brand-border overflow-hidden flex flex-col justify-between text-white select-none mx-auto mb-8 text-left">
-                      <div className="flex justify-between items-start">
-                        <div className="w-10 h-8 bg-zinc-600 rounded-xs shadow-xs" />
-                        <span className="font-serif text-sm tracking-[0.2em] font-semibold text-zinc-300">FYNÉ</span>
-                      </div>
-                      
-                      <div className="font-mono text-base md:text-lg tracking-widest py-4 text-zinc-200">
-                        {watchedCardNum.replace(/(\d{4})/g, "$1 ").trim() || "•••• •••• •••• ••••"}
-                      </div>
-
-                      <div className="flex justify-between items-end">
-                        <div className="flex flex-col">
-                          <span className="text-[7px] tracking-[0.2em] text-white/40 uppercase">Card Holder</span>
-                          <span className="font-sans text-xs tracking-widest font-medium uppercase truncate max-w-[180px]">{watchedCardName}</span>
-                        </div>
-                        <div className="flex space-x-6 text-right">
-                          <div className="flex flex-col">
-                            <span className="text-[7px] tracking-[0.2em] text-white/40 uppercase">Expires</span>
-                            <span className="font-mono text-xs font-semibold">{watchedCardExp}</span>
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="text-[7px] tracking-[0.2em] text-white/40 uppercase">CVV</span>
-                            <span className="font-mono text-xs font-semibold">{watchedCardCvv}</span>
-                          </div>
-                        </div>
-                      </div>
+                  {/* GCC Cash on Delivery (COD) Exclusive Card */}
+                  <div className="p-8 border border-brand-primary bg-brand-bg-gray dark:bg-zinc-900/30 rounded-xs space-y-5 text-left">
+                    <div className="flex items-center gap-3 text-brand-primary">
+                      <ShieldCheck size={26} className="text-brand-primary flex-shrink-0" />
+                      <h3 className="font-serif text-lg tracking-wider uppercase font-semibold text-brand-heading">
+                        GCC Cash on Delivery (COD)
+                      </h3>
                     </div>
-                  )}
-
-                  {/* Form inputs */}
-                  <div className="space-y-4">
-                    {paymentProvider === "stripe" ? (
-                      <div className="space-y-4">
-                        <div className="space-y-2 text-left">
-                          <label className="font-serif text-[10px] tracking-widest font-semibold uppercase text-brand-primary">Name on Card</label>
-                          <input
-                            type="text"
-                            {...register("cardName")}
-                            className="w-full bg-white dark:bg-[#0d0c0b] border border-brand-border focus:border-brand-primary text-xs tracking-widest px-4 py-3 rounded-xs uppercase focus:outline-hidden"
-                            placeholder="ALEX VANCE"
-                          />
-                        </div>
-                        
-                        <div className="space-y-2 text-left">
-                          <label className="font-serif text-[10px] tracking-widest font-semibold uppercase text-brand-primary">Card Number</label>
-                          <input
-                            type="text"
-                            maxLength={16}
-                            {...register("cardNumber")}
-                            className="w-full bg-white dark:bg-[#0d0c0b] border border-brand-border focus:border-brand-primary text-xs tracking-widest px-4 py-3 rounded-xs uppercase focus:outline-hidden"
-                            placeholder="4111222233334444"
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2 text-left">
-                            <label className="font-serif text-[10px] tracking-widest font-semibold uppercase text-brand-primary">Expiration Date</label>
-                            <input
-                              type="text"
-                              maxLength={5}
-                              {...register("cardExpiry")}
-                              className="w-full bg-white dark:bg-[#0d0c0b] border border-brand-border focus:border-brand-primary text-xs tracking-widest px-4 py-3 rounded-xs uppercase focus:outline-hidden"
-                              placeholder="MM/YY"
-                            />
-                          </div>
-                          <div className="space-y-2 text-left">
-                            <label className="font-serif text-[10px] tracking-widest font-semibold uppercase text-brand-primary">CVV</label>
-                            <input
-                              type="text"
-                              maxLength={3}
-                              {...register("cardCvv")}
-                              className="w-full bg-white dark:bg-[#0d0c0b] border border-brand-border focus:border-brand-primary text-xs tracking-widest px-4 py-3 rounded-xs uppercase focus:outline-hidden"
-                              placeholder="123"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      // Razorpay layout message
-                      <div className="p-6 border border-brand-border rounded-xs bg-brand-bg-gray dark:bg-zinc-900/10 space-y-4 text-left">
-                        <p className="text-xs leading-relaxed text-brand-foreground/85 font-light">
-                          <strong>Razorpay Instant Checkout:</strong> Checking out via Razorpay will launch a secure overlay window supporting global cards, Netbanking, and UPI transfers.
-                        </p>
-                      </div>
-                    )}
+                    <p className="text-xs text-brand-foreground/80 leading-relaxed font-light">
+                      Cash on Delivery is enabled for all GCC destinations (United Arab Emirates, Saudi Arabia, Qatar, Kuwait, Bahrain, and Oman). 
+                      Pay safely upon hand-delivery of your bespoke atelier box.
+                    </p>
+                    <div className="flex items-center gap-2 pt-2 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold tracking-widest uppercase">
+                      <CheckCircle2 size={15} /> COMPLIMENTARY INSURED HAND-DELIVERY & ENGRAVING INCLUDED
+                    </div>
                   </div>
 
                   <div className="pt-6 border-t border-brand-border flex justify-between">
@@ -526,16 +439,16 @@ export default function CheckoutPage() {
                     <button
                       type="button"
                       disabled={paymentStatus === "processing"}
-                      onClick={handleSubmit(processPayment)}
+                      onClick={handleSubmit(processPayment, onInvalid)}
                       className="btn-primary py-3.5 px-10 text-[10px] flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       {paymentStatus === "processing" ? (
                         <>
                           <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          PROCESSING...
+                          CONFIRMING ORDER...
                         </>
                       ) : (
-                        `PAY ${convertAndFormatPrice(totalUSD, currency)}`
+                        `CONFIRM COD ORDER (${convertAndFormatPrice(totalUSD, currency)})`
                       )}
                     </button>
                   </div>

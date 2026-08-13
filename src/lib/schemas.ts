@@ -49,9 +49,9 @@ export const CheckoutSchema = z.object({
     address: z.string().min(5, "Address must be at least 5 characters").trim(),
     city: z.string().min(2, "City name is required").trim(),
     country: z.string().min(2, "Country name is required").trim(),
-    zipCode: z.string().min(3, "Zip code is required").trim(),
+    zipCode: z.string().min(1, "Zip code is required").default("00000"),
   }),
-  paymentProvider: z.enum(["mock", "stripe", "razorpay"]).default("mock"),
+  paymentProvider: z.enum(["mock", "stripe", "razorpay", "cod"]).default("cod"),
   shippingMethod: z.enum(["standard", "priority"]).default("standard"),
   couponCode: z.string().nullable().optional(),
 });
