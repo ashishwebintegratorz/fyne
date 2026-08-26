@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { Josefin_Sans, Inter } from "next/font/google";
+import { Josefin_Sans, Inter, Pinyon_Script } from "next/font/google";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
 import OfferBannerModal from "@/components/OfferBannerModal";
 import Providers from "@/components/Providers";
@@ -17,6 +18,12 @@ const inter = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
+});
+
+const pinyon = Pinyon_Script({
+  variable: "--font-logo",
+  subsets: ["latin"],
+  weight: ["400"],
 });
 
 export const metadata: Metadata = {
@@ -40,7 +47,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${josefin.variable} ${inter.variable} h-full antialiased`}
+      className={`${josefin.variable} ${inter.variable} ${pinyon.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-sans selection:bg-gold-300/30 selection:text-gold-700">

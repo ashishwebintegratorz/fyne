@@ -1,30 +1,73 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 
 interface PersonalizerPreviewProps {
-  color: string;
-  initials: string;
+  color?: string;
+  initials?: string;
   className?: string;
   size?: "sm" | "md" | "lg" | "xl";
+  foilColor?: "gold" | "silver";
 }
 
-export const LEATHER_COLORS: Record<string, { hex: string; image: string; desc: string; imageScale: number }> = {
-  "Cocoa Brown": { hex: "#5c4033", image: "/products/cocoa-brown.png", desc: "Crocodile Embossed Cocoa", imageScale: 0.55 },
-  "Celeste Blue": { hex: "#4ba3e3", image: "/products/sky-blue.png", desc: "Crocodile Embossed Sky", imageScale: 0.99 },
-  "Midnight Navy": { hex: "#1d2951", image: "/products/midnight-navy.png", desc: "Crocodile Embossed Navy", imageScale: 0.85 },
-  "Forest Green": { hex: "#1b4d3e", image: "/products/forest-green.png", desc: "Crocodile Embossed Green", imageScale: 0.6 },
-  "Ruby Red": { hex: "#800020", image: "/products/ruby-red.png", desc: "Crocodile Embossed Ruby", imageScale: 0.6 },
+export const LEATHER_COLORS: Record<string, { hex: string; image: string; desc: string }> = {
+  "Cocoa Brown": { hex: "#5c4033", image: "/products/cocoa-brown.jpg", desc: "Crocodile Embossed Cocoa" },
+  "Celeste Blue": { hex: "#4ba3e3", image: "/products/sky-blue.png", desc: "Crocodile Embossed Sky" },
+  "Midnight Navy": { hex: "#1d2951", image: "/products/midnight-navy.jpg", desc: "Crocodile Embossed Navy" },
+  "Forest Green": { hex: "#1b4d3e", image: "/products/forest-green.jpg", desc: "Crocodile Embossed Green" },
+  "Ruby Red": { hex: "#800020", image: "/products/ruby-red.jpg", desc: "Crocodile Embossed Ruby" },
 };
 
+// Global shared cache and fetch promise to prevent duplicate concurrent API requests
+let cachedColors: any[] | null = null;
+let fetchPromise: Promise<any> | null = null;
+
 export default function PersonalizerPreview({
-  color,
-  initials,
+  color = "Cocoa Brown",
+  initials = "",
   className = "",
   size = "lg",
+  foilColor = "gold",
 }: PersonalizerPreviewProps) {
-  const selectedColor = LEATHER_COLORS[color] || LEATHER_COLORS["Cocoa Brown"];
+  const [dbColors, setDbColors] = useState<any[] | null>(cachedColors);
+
+  useEffect(() => {
+    if (dbColors) return;
+    if (cachedColors) {
+      setDbColors(cachedColors);
+      return;
+    }
+
+    if (!fetchPromise) {
+      fetchPromise = fetch("/api/customizer-colors")
+        .then((res) => (res.ok ? res.json() : { success: false }))
+        .then((data) => {
+          if (data.success && data.colors) {
+            cachedColors = data.colors;
+            return data.colors;
+          }
+          return [];
+        })
+        .catch((err) => {
+          console.error("Failed to fetch customizer casing colors:", err);
+          return [];
+        });
+    }
+
+    fetchPromise.then((colors) => {
+      setDbColors(colors);
+    });
+  }, [dbColors]);
+
+  const safeColor = color || "Cocoa Brown";
+
+  // Dynamic color resolution
+  const dbMatch = dbColors?.find(
+    (c) => c.name && safeColor && c.name.toLowerCase() === safeColor.toLowerCase()
+  );
+  
+  const imageSrc = dbMatch?.image || LEATHER_COLORS[safeColor]?.image || "/products/cocoa-brown.jpg";
 
   // Responsive scale configurations
   const scale = {
@@ -34,43 +77,54 @@ export default function PersonalizerPreview({
     xl: "w-80 h-80",
   }[size];
 
-  const initialFontSize = {
-    sm: "tracking-[0.1em] text-[9px]",
-    md: "tracking-[0.15em] text-[13px] leading-tight",
-    lg: "tracking-[0.2em] text-[18px] leading-none",
-    xl: "tracking-[0.25em] text-[24px] leading-none",
+  const is4Chars = initials && initials.length > 3;
+
+  const specs = {
+    sm: { fontSize: is4Chars ? "11px" : "14px", letterSpacing: is4Chars ? "0.08em" : "0.12em", translateY: "-7px" },
+    md: { fontSize: is4Chars ? "19px" : "24px", letterSpacing: is4Chars ? "0.10em" : "0.16em", translateY: "-13px" },
+    lg: { fontSize: is4Chars ? "28px" : "36px", letterSpacing: is4Chars ? "0.12em" : "0.20em", translateY: "-21px" },
+    xl: { fontSize: is4Chars ? "38px" : "48px", letterSpacing: is4Chars ? "0.14em" : "0.25em", translateY: "-28px" },
   }[size];
 
   return (
     <div className={`relative flex items-center justify-center select-none ${scale} ${className}`}>
       {/* Oval Case Image container */}
       <div className="relative w-full h-full flex items-center justify-center">
-        <Image
-          src={selectedColor.image}
-          alt={`${color} leather case`}
-          fill
-          sizes="(max-w-768px) 100vw, 50vw"
-          className="object-contain transition-transform duration-300"
-          style={{ transform: `scale(${selectedColor.imageScale})` }}
-          priority
-        />
-
-        {/* Debossed Gold Hot-Stamped Initials Overlay (Centered) */}
-        <div className="absolute inset-0 flex items-center justify-center" style={{ transform: "translateY(-2px)" }}>
+        {dbColors === null ? (
+          <div className="w-5 h-5 border border-brand-border border-t-brand-primary rounded-full animate-spin" />
+        ) : (
+          <Image
+            src={imageSrc}
+            alt={`${color} leather case`}
+            fill
+            sizes="(max-w-768px) 100vw, 50vw"
+            className="object-contain"
+            priority
+          />
+        )}
+        
+        {/* Debossed Foil Hot-Stamped Initials Overlay (Centered) */}
+        <div className="absolute inset-0 flex items-center justify-center" style={{ transform: `translateY(${specs.translateY})` }}>
           {initials ? (
-            <div className="relative select-none">
+            <div className="relative select-none flex items-center justify-center">
               {/* Shadow Layer for 3D depth */}
-              <span className={`absolute inset-0 font-serif font-semibold text-black/50 translate-x-[0.5px] translate-y-[0.8px] blur-[0.5px] uppercase ${initialFontSize}`}>
+              <span 
+                className="absolute inset-0 font-serif font-semibold text-black/50 translate-x-[0.5px] translate-y-[0.8px] blur-[0.5px] uppercase text-center leading-none"
+                style={{
+                  fontSize: specs.fontSize,
+                  letterSpacing: specs.letterSpacing,
+                }}
+              >
                 {initials}
               </span>
-              {/* Gold Foil Layer */}
-              <span
-                className={`font-serif font-bold text-center tracking-[0.2em] uppercase leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] ${initialFontSize}`}
+              {/* Foil Layer */}
+              <span 
+                className={`inline-block font-serif font-bold text-center uppercase leading-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] ${
+                  foilColor === "silver" ? "monogram-foil-silver" : "monogram-foil-gold"
+                }`}
                 style={{
-                  color: "#d4af37",
-                  background: "linear-gradient(135deg, #f3e5ab 0%, #d4af37 40%, #aa7c11 70%, #d4af37 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
+                  fontSize: specs.fontSize,
+                  letterSpacing: specs.letterSpacing,
                   textShadow: "0.5px 0.5px 0.5px rgba(255,255,255,0.15)",
                 }}
               >

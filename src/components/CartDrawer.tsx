@@ -63,7 +63,7 @@ export default function CartDrawer() {
                   <button
                     onClick={() => {
                       setCartOpen(false);
-                      router.push("/product/luxury-lip-balm");
+                      router.push("/customizer/luxury-lip-balm");
                     }}
                     className="btn-primary py-3 px-6 text-[10px]"
                   >
@@ -79,6 +79,7 @@ export default function CartDrawer() {
                       <PersonalizerPreview 
                         color={item.color || "Cocoa Brown"} 
                         initials={item.initials || ""} 
+                        foilColor={item.foilColor}
                         size="sm" 
                         className="w-full h-full"
                       />
@@ -91,8 +92,13 @@ export default function CartDrawer() {
                         {item.color} Casing
                       </p>
                       {item.initials && (
-                        <p className="text-[10px] text-brand-primary font-medium tracking-widest">
-                          MONOGRAM: {item.initials}
+                        <p className="text-[10px] text-brand-primary font-medium tracking-widest uppercase">
+                          MONOGRAM: {item.initials} ({item.foilColor || "gold"})
+                        </p>
+                      )}
+                      {item.giftWrap && (
+                        <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold tracking-wider uppercase">
+                          + PREMIUM GIFT WRAP (+$10 USD)
                         </p>
                       )}
 

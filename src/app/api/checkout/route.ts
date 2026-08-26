@@ -1,74 +1,230 @@
 import { NextResponse } from "next/server";
+import { connectToDatabase } from "@/lib/mongodb";
+import Order from "@/models/Order";
+import Product from "@/models/Product";
+import Customer from "@/models/Customer";
+import Coupon from "@/models/Coupon";
+import ShippingZone from "@/models/ShippingZone";
+import { CheckoutSchema } from "@/lib/schemas";
 
 export async function POST(request: Request) {
   try {
+    await connectToDatabase();
+    
     const body = await request.json();
-    const { items, customerInfo, paymentProvider } = body;
-
-    // 1. Basic validation
-    if (!items || !Array.isArray(items) || items.length === 0) {
+    const result = CheckoutSchema.safeParse(body);
+    if (!result.success) {
       return NextResponse.json(
-        { error: "Cart items are required to process order." },
+        { error: result.error.issues[0].message || "Invalid checkout details" },
         { status: 400 }
-      )
+      );
     }
+    const { items, customerInfo, paymentProvider, shippingMethod, couponCode } = result.data;
 
-    if (!customerInfo || !customerInfo.email || !customerInfo.name) {
-      return NextResponse.json(
-        { error: "Customer details (name & email) are required." },
-        { status: 400 }
-      )
-    }
-
-    // 2. Server-side totals calculation (Security Best Practice)
-    // In production, prices should be resolved from a database rather than trusting client-side pricing.
-    let calculatedSubtotal = 0;
-    const basePrices: Record<string, number> = {
+    // 2. Resolve pricing from Database
+    let subtotalUSD = 0;
+    const resolvedItems = [];
+    
+    // Hardcoded fallback prices in case DB is not fully seeded yet
+    const fallbackPrices: Record<string, number> = {
+      "cocoa-brown": 85,
+      "sky-blue": 85,
+      "midnight-navy": 85,
+      "forest-green": 85,
+      "ruby-red": 85,
       "luxury-lip-balm": 85,
       "leather-sleeve-duo": 140,
       "balm-refill-trio": 45,
     };
 
     for (const item of items) {
-      const basePrice = basePrices[item.productId] || 85;
-      calculatedSubtotal += basePrice * item.quantity;
+      // Find product by id/productId in database
+      const product = await Product.findOne({ productId: item.productId });
+      const basePrice = product ? product.price : (fallbackPrices[item.productId] || 85);
+      const price = basePrice + (item.giftWrap ? 10 : 0);
+      
+      subtotalUSD += price * item.quantity;
+      
+      resolvedItems.push({
+        productId: item.productId,
+        name: product ? product.name : item.name,
+        price: price,
+        quantity: item.quantity,
+        color: item.color || "",
+        initials: item.initials || "",
+        foilColor: item.foilColor || "gold",
+        giftWrap: item.giftWrap || false,
+        image: item.image || ""
+      });
+
+      // Update product inventory in DB
+      if (product) {
+        product.stock = Math.max(0, product.stock - item.quantity);
+        await product.save();
+      }
     }
 
-    // Apply complimentary shipping
-    const calculatedTotal = calculatedSubtotal;
+    // 3. Resolve Shipping Costs
+    let shippingCostUSD = 0;
+    const country = customerInfo.country || "United Arab Emirates";
+    
+    // Find shipping zone matching this country
+    const zone = await ShippingZone.findOne({
+      countries: { $regex: new RegExp(`^${country}$`, "i") }
+    });
 
-    // 3. Provider-specific response formatting
+    const priorityFee = zone ? zone.priorityRate : 15;
+    const standardFee = zone ? zone.baseRate : 0;
+    const minFreeThreshold = zone ? zone.minFreeShippingSubtotal : 100;
+
+    if (shippingMethod === "priority") {
+      shippingCostUSD = priorityFee;
+    } else {
+      // Check if eligible for free standard shipping
+      if (minFreeThreshold !== null && subtotalUSD >= minFreeThreshold) {
+        shippingCostUSD = 0;
+      } else {
+        shippingCostUSD = standardFee;
+      }
+    }
+
+    // 4. Resolve Coupon Code Discount
+    let discountUSD = 0;
+    if (couponCode) {
+      const coupon = await Coupon.findOne({ code: couponCode.trim().toUpperCase(), active: true });
+      if (coupon) {
+        // Double check expiration
+        const notExpired = !coupon.expirationDate || new Date() <= new Date(coupon.expirationDate);
+        // Double check usage limit
+        const limitNotReached = coupon.usageLimit === null || coupon.usageLimit === undefined || coupon.usageCount < coupon.usageLimit;
+
+        if (notExpired && limitNotReached) {
+          if (coupon.type === "percentage") {
+            discountUSD = (subtotalUSD * coupon.value) / 100;
+          } else if (coupon.type === "fixed") {
+            discountUSD = coupon.value;
+          }
+          // Clamp discount so it doesn't exceed subtotal
+          discountUSD = Math.min(discountUSD, subtotalUSD);
+          
+          // Increment usage count
+          coupon.usageCount += 1;
+          await coupon.save();
+        }
+      }
+    }
+
+    const totalUSD = subtotalUSD + shippingCostUSD - discountUSD;
+    const orderRef = `FYN-${Math.floor(100000 + Math.random() * 900000)}`;
+
+    // 5. Save Order to Database
+    const newOrder = new Order({
+      orderReference: orderRef,
+      customerInfo: {
+        name: customerInfo.name,
+        email: customerInfo.email.toLowerCase(),
+        phone: customerInfo.phone || "N/A",
+        address: customerInfo.address,
+        city: customerInfo.city || "N/A",
+        country: country,
+        zipCode: customerInfo.zipCode || ""
+      },
+      items: resolvedItems,
+      subtotal: subtotalUSD,
+      shippingCost: shippingCostUSD,
+      discount: discountUSD,
+      total: totalUSD,
+      currency: "USD",
+      paymentProvider: paymentProvider || "cod",
+      paymentStatus: paymentProvider === "cod" ? "cod_pending" : "paid",
+      shippingMethod: shippingMethod || "standard",
+      status: "pending"
+    });
+
+    await newOrder.save();
+
+    // 6. Create or Update Customer Record
+    let customer = await Customer.findOne({ email: customerInfo.email.toLowerCase() });
+    
+    const addressObj = {
+      address: customerInfo.address,
+      city: customerInfo.city || "N/A",
+      country: country,
+      zipCode: customerInfo.zipCode || "",
+      isDefault: true
+    };
+
+    if (customer) {
+      // Update customer stats
+      customer.name = customerInfo.name;
+      if (customerInfo.phone) customer.phone = customerInfo.phone;
+      
+      // Add address to customer addresses if unique
+      const addressExists = customer.addresses.some(
+        (a: any) => a.address.toLowerCase() === customerInfo.address.toLowerCase()
+      );
+      if (!addressExists) {
+        // Set previous default addresses to false
+        customer.addresses.forEach((a: any) => { a.isDefault = false; });
+        customer.addresses.push(addressObj);
+      }
+
+      customer.orders.push(newOrder._id);
+      customer.orderCount += 1;
+      customer.totalSpend += totalUSD;
+      customer.activity.push({
+        action: `PURCHASE: Placed order ${orderRef}`,
+        timestamp: new Date()
+      });
+      
+      await customer.save();
+    } else {
+      // Create new customer
+      customer = new Customer({
+        name: customerInfo.name,
+        email: customerInfo.email.toLowerCase(),
+        phone: customerInfo.phone || "N/A",
+        addresses: [addressObj],
+        orders: [newOrder._id],
+        orderCount: 1,
+        totalSpend: totalUSD,
+        activity: [
+          { action: "ACCOUNT_CREATED", timestamp: new Date() },
+          { action: `PURCHASE: Placed order ${orderRef}`, timestamp: new Date() }
+        ]
+      });
+      await customer.save();
+    }
+
+    // 7. Format provider-specific mock response
     if (paymentProvider === "stripe") {
-      // Mock generating a Stripe PaymentIntent
       return NextResponse.json({
         success: true,
         provider: "stripe",
-        amount: calculatedTotal * 100, // Stripe expects cents
+        amount: Math.round(totalUSD * 100), // in cents
         currency: "usd",
         clientSecret: `pi_mock_${Math.random().toString(36).substring(2, 12)}_secret_${Math.random().toString(36).substring(2, 10)}`,
-        publishableKey: "pk_test_fyne_luxury_51Pabcdxyz123",
-        message: "Stripe PaymentIntent initialized on server."
+        orderReference: orderRef,
+        message: "Stripe transaction initialized and written to MongoDB."
       });
     } else if (paymentProvider === "razorpay") {
-      // Mock generating a Razorpay Order
       return NextResponse.json({
         success: true,
         provider: "razorpay",
-        amount: calculatedTotal * 100, // Razorpay expects paise/cents
+        amount: Math.round(totalUSD * 100), // in paise
         currency: "INR",
         orderId: `order_mock_${Math.random().toString(36).substring(2, 12)}`,
-        keyId: "rzp_test_fyne_key_abc123",
-        message: "Razorpay Order ID created on server."
+        orderReference: orderRef,
+        message: "Razorpay transaction initialized and written to MongoDB."
       });
     }
 
-    // Default response for simple checkout confirmation
     return NextResponse.json({
       success: true,
-      amount: calculatedTotal,
+      amount: totalUSD,
       currency: "usd",
-      orderReference: `FYN-${Math.floor(100000 + Math.random() * 900000)}`,
-      message: "Standard order transaction processed."
+      orderReference: orderRef,
+      message: "Standard order written to MongoDB successfully."
     });
 
   } catch (err: unknown) {

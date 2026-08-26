@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ShoppingBag, Sun, Moon, Menu, X, Search, ChevronDown } from "lucide-react";
-import { useCartStore, CURRENCIES, CurrencyCode } from "@/store/useCartStore";
+import { useCartStore, CURRENCIES, CurrencyCode, convertAndFormatPrice } from "@/store/useCartStore";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Navbar() {
@@ -13,6 +13,10 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currencyOpen, setCurrencyOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [products, setProducts] = useState<any[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
 
   // Calculate total items count
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -25,15 +29,61 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close mobile menu on path changes
+  // Fetch search products dynamically when search opens
+  useEffect(() => {
+    if (searchOpen && products.length === 0) {
+      setLoadingProducts(true);
+      fetch("/api/products")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && data.products) {
+            setProducts(data.products);
+          }
+        })
+        .catch((err) => console.error("Error fetching search products:", err))
+        .finally(() => setLoadingProducts(false));
+    }
+  }, [searchOpen, products.length]);
+
+  // Lock body scroll and listen for escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSearchOpen(false);
+      }
+    };
+    if (searchOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [searchOpen]);
+
+  // Close mobile menu and search on path changes
   useEffect(() => {
     setMobileMenuOpen(false);
+    setSearchOpen(false);
+    setSearchQuery("");
   }, [pathname]);
+
+  const filteredProducts = products.filter((p) => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return false;
+    return (
+      p.name.toLowerCase().includes(q) ||
+      (p.description && p.description.toLowerCase().includes(q)) ||
+      (p.category && p.category.toLowerCase().includes(q))
+    );
+  });
 
   const navLinks = [
     { name: "HOME", href: "/" },
-    { name: "ALL PRODUCTS", href: "/product/luxury-lip-balm" },
-    { name: "CUSTOMIZER", href: "/personalize" },
+    { name: "CUSTOMIZER", href: "/customizer/luxury-lip-balm" },
     { name: "OUR STORY", href: "/about" },
     { name: "CONTACT US", href: "/contact" },
   ];
@@ -126,7 +176,11 @@ export default function Navbar() {
             </div>
 
             {/* Search Icon (OVIA style) */}
-            <button className="text-brand-foreground hover:text-brand-primary p-1 cursor-pointer">
+            <button 
+              onClick={() => setSearchOpen(true)}
+              className="text-brand-foreground hover:text-brand-primary p-1 cursor-pointer"
+              title="Search Products"
+            >
               <Search size={16} strokeWidth={1.8} />
             </button>
 
@@ -229,6 +283,108 @@ export default function Navbar() {
                     {c.code}
                   </button>
                 ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 3. Fullscreen Search Overlay */}
+      <AnimatePresence>
+        {searchOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/60 dark:bg-black/80 backdrop-blur-md flex flex-col justify-start items-center pt-24 px-6 sm:px-12"
+          >
+            {/* Click outside backdrop container */}
+            <div className="absolute inset-0 z-0" onClick={() => setSearchOpen(false)} />
+
+            {/* Centered Modal Container */}
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="w-full max-w-3xl flex flex-col space-y-8 z-10"
+            >
+              {/* Input Field Row */}
+              <div className="flex items-center justify-between border-b border-white/20 pb-4 relative">
+                <Search size={22} className="text-white/40 mr-4" />
+                <input
+                  type="text"
+                  autoFocus
+                  placeholder="SEARCH FYNÉ PRODUCTS..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="flex-grow bg-transparent border-0 font-serif text-lg tracking-[0.15em] text-white placeholder:text-white/30 focus:outline-none uppercase"
+                />
+                <button
+                  onClick={() => setSearchOpen(false)}
+                  className="text-white/60 hover:text-white p-2 transition-colors cursor-pointer"
+                  aria-label="Close search"
+                >
+                  <X size={22} />
+                </button>
+              </div>
+
+              {/* Instant Search Results Panel */}
+              <div className="flex-grow max-h-[60vh] overflow-y-auto pr-2 space-y-6">
+                {searchQuery.trim() === "" ? (
+                  <div className="text-center py-12 space-y-2">
+                    <p className="font-serif text-sm text-white/50 tracking-wider">Start typing to search the FYNÉ Collection</p>
+                    <p className="font-sans text-[10px] text-white/35 tracking-widest uppercase">Try &quot;balm&quot;, &quot;brown&quot;, &quot;navy&quot;, &quot;crocodile&quot;</p>
+                  </div>
+                ) : loadingProducts ? (
+                  <div className="flex justify-center items-center py-12">
+                    <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                  </div>
+                ) : filteredProducts.length === 0 ? (
+                  <div className="text-center py-12">
+                    <p className="font-serif text-sm text-white/55 tracking-wider">No products found matching &quot;{searchQuery}&quot;</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {filteredProducts.map((p) => (
+                      <Link
+                        key={p.productId}
+                        href={`/customizer/${p.productId}`}
+                        onClick={() => setSearchOpen(false)}
+                        className="flex gap-4 p-4 rounded-xs border border-white/10 hover:border-white/35 bg-white/5 hover:bg-white/10 transition-all duration-300 items-center text-left group"
+                      >
+                        {/* Thumbnail Icon */}
+                        <div className="w-16 h-20 bg-white/10 rounded-xs flex items-center justify-center border border-white/15 p-1.5 relative overflow-hidden flex-shrink-0">
+                          {p.images && p.images.length > 0 ? (
+                            <img
+                              src={p.images[0]}
+                              alt={p.name}
+                              className="object-contain max-h-full max-w-full"
+                            />
+                          ) : (
+                            <div className="text-[7px] text-white/30 font-sans tracking-wider text-center">FYNÉ ATELIER</div>
+                          )}
+                        </div>
+                        
+                        {/* Product Summary */}
+                        <div className="space-y-1">
+                          <span className="text-[8px] text-brand-primary tracking-[0.2em] font-semibold uppercase font-sans">
+                            {p.category}
+                          </span>
+                          <h4 className="font-sans text-xs font-bold uppercase tracking-wider text-white group-hover:text-brand-primary transition-colors">
+                            {p.name}
+                          </h4>
+                          <p className="text-[10px] text-white/50 font-light line-clamp-1">
+                            {p.description}
+                          </p>
+                          <span className="block font-sans text-xs font-semibold text-white/80">
+                            {convertAndFormatPrice(p.price, currency)}
+                          </span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
             </motion.div>
           </motion.div>

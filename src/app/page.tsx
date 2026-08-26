@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCartStore, convertAndFormatPrice } from "@/store/useCartStore";
 import PersonalizerPreview from "@/components/PersonalizerPreview";
+import Hero from "@/components/Hero";
 import { ArrowRight, Star, ShoppingBag, CreditCard, ChevronLeft, ChevronRight } from "lucide-react";
 
 const BEST_SELLERS = [
@@ -65,6 +66,74 @@ export default function Home() {
   const { addItem, setCartOpen, currency } = useCartStore();
   const [addedProductId, setAddedProductId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+interface HomepageProduct {
+  productId: string;
+  name: string;
+  price: number;
+  stars: number;
+  reviewsCount: number;
+  isCustomizable: boolean;
+  defaultColor: string;
+  defaultInitials: string;
+  images?: string[];
+}
+
+  const [products, setProducts] = useState<HomepageProduct[]>(BEST_SELLERS as HomepageProduct[]);
+
+  useEffect(() => {
+    async function loadDbProducts() {
+      try {
+        const res = await fetch("/api/products");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.products) {
+            const mapped = data.products.map((p: any) => ({
+              productId: p.productId,
+              name: p.name,
+              price: p.price,
+              stars: 5,
+              reviewsCount: 18,
+              isCustomizable: p.isCustomizable ?? true,
+              defaultColor: p.defaultColor || "Cocoa Brown",
+              defaultInitials: p.defaultInitials || "FN",
+              images: p.images || [],
+            }));
+            setProducts(mapped);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load products from DB, using fallbacks:", err);
+      }
+    }
+    loadDbProducts();
+  }, []);
+
+  // Auto-sliding loop for Best Seller Carousel
+  useEffect(() => {
+    if (products.length === 0) return;
+
+    const interval = setInterval(() => {
+      if (scrollRef.current) {
+        const { scrollLeft, clientWidth, scrollWidth } = scrollRef.current;
+        const scrollAmount = window.innerWidth < 768 ? clientWidth * 0.9 : clientWidth * 0.35;
+
+        // Loop back to start if reaching the end
+        if (scrollLeft + clientWidth >= scrollWidth - 30) {
+          scrollRef.current.scrollTo({
+            left: 0,
+            behavior: "smooth",
+          });
+        } else {
+          scrollRef.current.scrollTo({
+            left: scrollLeft + scrollAmount,
+            behavior: "smooth",
+          });
+        }
+      }
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [products]);
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
@@ -86,7 +155,7 @@ export default function Home() {
       quantity: 1,
       color: prod.isCustomizable ? prod.defaultColor || "Cocoa Brown" : "",
       initials: prod.isCustomizable ? prod.defaultInitials || "FN" : "",
-      giftWrap: true,
+      giftWrap: false,
       image: "",
     });
     
@@ -101,34 +170,7 @@ export default function Home() {
     <div className="flex flex-col w-full bg-white dark:bg-[#0d0c0b] text-brand-foreground font-sans">
       
       {/* 1. Hero Section */}
-      <section className="relative min-h-[75vh] flex items-center justify-start bg-brand-bg-gray dark:bg-zinc-900/40 px-8 md:px-20 py-24 overflow-hidden border-b border-brand-border">
-        <div className="absolute inset-0 bg-radial from-brand-bg-green/10 via-transparent to-transparent pointer-events-none" />
-        
-        <div className="max-w-2xl text-left z-10 space-y-6">
-          <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-light tracking-[0.12em] leading-tight text-brand-heading uppercase">
-            Pure Luxury. <br />
-            Personalized Glow.
-          </h1>
-          <p className="font-sans text-xs md:text-sm font-light tracking-wide text-brand-foreground/75 leading-relaxed max-w-md">
-            Premium organic lip balms encased inside bespoke Florentine leather sleeves. 
-            Meticulously hand-stitched and hot-stamped in gold foil with your custom monograms.
-          </p>
-          <div className="pt-2">
-            <Link href="/product/luxury-lip-balm" className="btn-primary inline-flex items-center gap-2">
-              DISCOVER <ArrowRight size={12} />
-            </Link>
-          </div>
-        </div>
-
-        {/* Floating background preview */}
-        <div className="absolute right-10 lg:right-24 bottom-10 lg:bottom-12 w-80 h-80 opacity-15 lg:opacity-100 pointer-events-none hidden sm:block">
-          <PersonalizerPreview 
-            color="Cocoa Brown" 
-            initials="FN" 
-            size="xl" 
-          />
-        </div>
-      </section>
+      <Hero />
 
       {/* 2. Best Sellers Section */}
       <section className="py-24 px-6 md:px-12 bg-white dark:bg-[#0d0c0b]">
@@ -159,7 +201,7 @@ export default function Home() {
               </div>
               
               <Link 
-                href="/product/luxury-lip-balm" 
+                href="/customizer/luxury-lip-balm" 
                 className="font-sans text-[10px] tracking-[0.15em] font-semibold text-brand-foreground hover:text-brand-primary uppercase border-b border-brand-foreground pb-0.5"
               >
                 View all
@@ -171,22 +213,30 @@ export default function Home() {
           <div className="relative">
             <div 
               ref={scrollRef}
-              className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth gap-8 pb-6 scrollbar-none"
+              className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth gap-6 sm:gap-8 pb-6 scrollbar-none"
               style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
-              {BEST_SELLERS.map((prod) => (
+              {products.map((prod) => (
                 <div 
                   key={prod.productId} 
-                  className="flex-shrink-0 w-full sm:w-[calc(50%-16px)] md:w-[calc(33.333%-22px)] snap-start group flex flex-col justify-between text-left space-y-5"
+                  className="flex-shrink-0 w-[calc(50%-12px)] sm:w-[calc(50%-16px)] md:w-[calc(33.333%-22px)] snap-start group flex flex-col justify-between text-left space-y-5"
                 >
                   {/* Image Frame - transparent background, uniform size, scaled layout */}
-                  <div className="h-64 w-full bg-transparent flex items-center justify-center relative select-none transition-transform duration-300 group-hover:scale-105">
-                    <PersonalizerPreview 
-                      color={prod.defaultColor || "Cocoa Brown"} 
-                      initials={prod.defaultInitials || "FN"} 
-                      size="md" 
-                      className="w-full h-full"
-                    />
+                  <div className="h-44 sm:h-64 w-full bg-transparent flex items-center justify-center relative select-none transition-transform duration-300 group-hover:scale-105">
+                    {prod.images && prod.images.length > 0 ? (
+                      <img 
+                        src={prod.images[0]} 
+                        alt={prod.name} 
+                        className="object-contain max-h-full max-w-full"
+                      />
+                    ) : (
+                      <PersonalizerPreview 
+                        color={prod.defaultColor || "Cocoa Brown"} 
+                        initials={prod.defaultInitials || "FN"} 
+                        size="md" 
+                        className="w-full h-full"
+                      />
+                    )}
                   </div>
 
                   {/* Meta details */}
@@ -231,7 +281,7 @@ export default function Home() {
 
                     {prod.isCustomizable && (
                       <Link 
-                        href={`/product/${prod.productId}`}
+                        href={`/customizer/${prod.productId}`}
                         className="block text-center text-[9px] font-sans font-semibold tracking-widest text-brand-foreground/55 hover:text-brand-primary uppercase pt-1 hover-underline w-max mx-auto"
                       >
                         Customize Case Monograms
