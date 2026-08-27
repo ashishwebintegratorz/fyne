@@ -83,7 +83,7 @@ export default function Navbar() {
 
   const navLinks = [
     { name: "HOME", href: "/" },
-    { name: "CUSTOMIZER", href: "/customizer/luxury-lip-balm" },
+    { name: "SHOP", href: "/customizer/luxury-lip-balm" },
     { name: "OUR STORY", href: "/about" },
     { name: "CONTACT US", href: "/contact" },
   ];
@@ -97,14 +97,14 @@ export default function Navbar() {
 
       {/* 2. Main Header */}
       <header
-        className="sticky top-0 w-full z-40 py-4 bg-white/95 dark:bg-[#0d0c0b]/95 border-b border-brand-border shadow-xs"
+        className="sticky top-0 w-full z-40 py-2 bg-white/95 dark:bg-[#0d0c0b]/95 border-b border-brand-border shadow-xs"
       >
         <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
           
-          {/* Left Side: Brand Logo */}
-          <Link href="/" className="flex flex-col items-start select-none">
-            <span className="font-serif text-xl sm:text-2xl font-light tracking-[0.3em] text-brand-primary uppercase">
-              FYNÉ
+          {/* Left Side: Brand Cursive Logo */}
+          <Link href="/" className="flex items-center select-none py-1 group">
+            <span className="font-logo text-3xl sm:text-4xl md:text-[40px] font-normal tracking-wide text-[#2B170B] dark:text-[#E8D8CD] leading-none transition-transform group-hover:scale-105">
+              Fyné
             </span>
           </Link>
 
@@ -116,8 +116,10 @@ export default function Navbar() {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`relative font-sans text-[10px] tracking-[0.18em] font-medium transition-colors hover:text-brand-primary ${
-                    isActive ? "text-brand-primary border-b border-brand-primary/60 pb-1" : "text-brand-foreground/75"
+                  className={`relative font-sans text-[11px] sm:text-[11.5px] tracking-[0.2em] font-semibold transition-colors uppercase ${
+                    isActive
+                      ? "text-[#2B170B] dark:text-[#E8D8CD] border-b-2 border-[#2B170B] dark:border-[#E8D8CD] pb-1"
+                      : "text-[#3D2314] hover:text-[#180A04] dark:text-[#CBB5A1] dark:hover:text-white"
                   }`}
                 >
                   {navLinks.find((l) => l.href === link.href)?.name || link.name}
@@ -251,7 +253,7 @@ export default function Navbar() {
                 >
                   <Link
                     href={link.href}
-                    className="font-serif text-sm tracking-widest text-brand-primary block hover:text-brand-foreground"
+                    className="font-serif text-sm tracking-widest text-[#3D2314] dark:text-[#E8D8CD] block hover:text-[#180A04]"
                   >
                     {link.name}
                   </Link>

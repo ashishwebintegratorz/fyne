@@ -98,7 +98,7 @@ export default function CartDrawer() {
                       )}
                       {item.giftWrap && (
                         <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold tracking-wider uppercase">
-                          + PREMIUM GIFT WRAP (+$10 USD)
+                          + PREMIUM GIFT WRAP (+{convertAndFormatPrice(10, currency)})
                         </p>
                       )}
 

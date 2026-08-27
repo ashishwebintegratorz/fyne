@@ -535,7 +535,7 @@ export default function CheckoutPage() {
                         <h4 className="font-sans text-xs font-semibold uppercase text-brand-heading">{item.name}</h4>
                         <p className="text-[10px] text-brand-foreground/50">Qty: {item.quantity} • {item.color}</p>
                         {item.initials && <p className="text-[9px] text-brand-primary font-semibold tracking-widest uppercase">({item.initials} - {item.foilColor || "gold"})</p>}
-                        {item.giftWrap && <p className="text-[9px] text-emerald-600 dark:text-emerald-400 font-semibold tracking-wider uppercase">+ PREMIUM GIFT WRAP (+$10 USD)</p>}
+                        {item.giftWrap && <p className="text-[9px] text-emerald-600 dark:text-emerald-400 font-semibold tracking-wider uppercase">+ PREMIUM GIFT WRAP (+{convertAndFormatPrice(10, currency)})</p>}
                       </div>
                     </div>
                     <span className="font-sans text-xs font-semibold text-brand-heading">

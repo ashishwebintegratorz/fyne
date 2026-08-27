@@ -29,7 +29,7 @@
 @theme {
   --font-serif: var(--font-serif), sans-serif;
   --font-sans: var(--font-sans), sans-serif;
-  --font-logo: var(--font-logo), cursive;
+  --font-logo: var(--font-logo), 'Pinyon Script', cursive;
   
   --color-brand-primary: var(--brand-primary);
   --color-brand-foreground: var(--brand-foreground);
@@ -37,6 +37,10 @@
   --color-brand-border: var(--brand-border);
   --color-brand-bg-gray: var(--brand-bg-gray);
   --color-brand-bg-green: var(--brand-bg-green);
+}
+
+.font-logo, .font-cursive {
+  font-family: var(--font-logo), 'Pinyon Script', cursive !important;
 }
 
 html, body {

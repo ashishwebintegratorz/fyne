@@ -34,7 +34,7 @@ export default function ContactPage() {
   return (
     <div className="bg-white dark:bg-[#0d0c0b] text-brand-foreground py-16 px-6 md:px-12 font-sans">
       <div className="max-w-6xl mx-auto pt-12">
-        
+
         {/* Header */}
         <div className="text-center space-y-4 mb-20">
           <span className="font-sans text-xs tracking-[0.3em] font-semibold text-brand-foreground/50 uppercase">CONTACT US</span>
@@ -45,7 +45,7 @@ export default function ContactPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
-          
+
           {/* Info Card Columns (Left) */}
           <div className="lg:col-span-5 space-y-8">
             <div className="space-y-3">
@@ -56,7 +56,7 @@ export default function ContactPage() {
             </div>
 
             <div className="space-y-6 pt-6 border-t border-brand-border">
-              
+
               {/* Direct Mail */}
               <div className="flex items-start space-x-4">
                 <div className="p-2.5 rounded-full border border-brand-border text-brand-foreground mt-1">
@@ -65,7 +65,7 @@ export default function ContactPage() {
                 <div>
                   <h4 className="font-serif tracking-widest text-[10px] font-semibold text-brand-heading uppercase">Email concierge</h4>
                   <p className="font-sans text-xs md:text-sm font-light hover:text-brand-primary transition-colors mt-1">
-                    <a href="mailto:concierge@fynebeauty.com">concierge@fynebeauty.com</a>
+                    <a href="mailto:Fyneae@outlook.com">Fyneae@outlook.com</a>
                   </p>
                 </div>
               </div>
@@ -78,35 +78,23 @@ export default function ContactPage() {
                 <div>
                   <h4 className="font-serif tracking-widest text-[10px] font-semibold text-brand-heading uppercase">Follow Instagram</h4>
                   <p className="font-sans text-xs md:text-sm font-light hover:text-brand-primary transition-colors mt-1">
-                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">@fynebeauty</a>
+                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">@fyne.ae</a>
                   </p>
                 </div>
               </div>
 
-              {/* Address MapPin */}
-              <div className="flex items-start space-x-4">
-                <div className="p-2.5 rounded-full border border-brand-border text-brand-foreground mt-1">
-                  <MapPin size={14} />
-                </div>
-                <div>
-                  <h4 className="font-serif tracking-widest text-[10px] font-semibold text-brand-heading uppercase">Head Atelier</h4>
-                  <p className="font-sans text-xs font-light text-brand-foreground/70 leading-relaxed mt-1">
-                    Maison Fyné<br />
-                    24 Rue du Faubourg Saint-Honoré, 75008 Paris, France
-                  </p>
-                </div>
-              </div>
+
 
             </div>
           </div>
 
           {/* Contact Form Box (Right) */}
           <div className="lg:col-span-7 bg-brand-bg-gray dark:bg-zinc-900/10 border border-brand-border rounded-xs p-8 md:p-10 shadow-xs">
-            
+
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
+
                 {/* Name field */}
                 <div className="space-y-2">
                   <label className="font-serif text-[10px] font-semibold tracking-widest uppercase text-brand-heading">Name</label>

@@ -335,32 +335,81 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
                 {/* 2. Monogram text input */}
                 <div className="space-y-4">
-                  <h4 className="font-serif text-[11px] font-semibold tracking-wider uppercase text-brand-heading">
-                    2. ADD HOT-STAMP MONOGRAM (MAX 4 LETTERS)
+                  <h4 className="font-serif text-[11px] font-semibold tracking-wider uppercase text-brand-heading flex items-center justify-between">
+                    <span>2. ADD HOT-STAMP MONOGRAM (MAX 4 CHARACTERS)</span>
+                    <span className="text-brand-foreground/50 font-sans font-light normal-case text-[10px]">Letters & Symbols</span>
                   </h4>
                   
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+                  <div className="flex flex-wrap items-center gap-4">
+                    {/* Input Field */}
                     <input
                       type="text"
                       maxLength={4}
                       value={initials}
                       onChange={(e) => {
-                        setInitials(e.target.value.toUpperCase().replace(/[^A-Z]/g, ""));
+                        setInitials(e.target.value.toUpperCase().replace(/[^A-Z0-9♥★⭐♡✦•\s]/g, "").slice(0, 4));
                         setCustomized(true);
                       }}
-                      placeholder="E.G. FYNE"
-                      className="bg-white dark:bg-[#0d0c0b] border border-brand-border focus:border-brand-primary font-serif tracking-[0.2em] text-xs uppercase px-4 py-3 w-40 text-center rounded-xs focus:outline-hidden"
+                      placeholder="E.G. S ♥"
+                      className="bg-white dark:bg-[#0d0c0b] border border-brand-border focus:border-brand-primary font-serif tracking-[0.2em] text-xs uppercase px-4 py-3 w-36 text-center rounded-xs focus:outline-hidden"
                     />
 
+                    {/* Quick Insert Symbols (Heart, Star, Sparkle) */}
+                    <div className="flex items-center gap-1.5 p-1 border border-brand-border bg-brand-bg-gray/40 dark:bg-zinc-900/30 rounded-xs">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (initials.length < 4) {
+                            setInitials((prev) => (prev + "♥").slice(0, 4));
+                            setCustomized(true);
+                          }
+                        }}
+                        title="Add Heart Monogram (♥)"
+                        className="px-2.5 py-1.5 bg-white dark:bg-zinc-800 border border-brand-border hover:border-brand-primary text-xs rounded-xs transition-all font-serif text-brand-heading hover:scale-105 cursor-pointer flex items-center gap-1"
+                      >
+                        <span className="text-sm leading-none">♥</span>
+                        <span className="text-[9px] font-sans font-medium uppercase tracking-wider text-brand-foreground/70 hidden sm:inline">Heart</span>
+                      </button>
+                      
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (initials.length < 4) {
+                            setInitials((prev) => (prev + "★").slice(0, 4));
+                            setCustomized(true);
+                          }
+                        }}
+                        title="Add Star Monogram (★)"
+                        className="px-2.5 py-1.5 bg-white dark:bg-zinc-800 border border-brand-border hover:border-brand-primary text-xs rounded-xs transition-all font-serif text-brand-heading hover:scale-105 cursor-pointer flex items-center gap-1"
+                      >
+                        <span className="text-sm leading-none">★</span>
+                        <span className="text-[9px] font-sans font-medium uppercase tracking-wider text-brand-foreground/70 hidden sm:inline">Star</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (initials.length < 4) {
+                            setInitials((prev) => (prev + "✦").slice(0, 4));
+                            setCustomized(true);
+                          }
+                        }}
+                        title="Add Sparkle Monogram (✦)"
+                        className="px-2 py-1.5 bg-white dark:bg-zinc-800 border border-brand-border hover:border-brand-primary text-xs rounded-xs transition-all font-serif text-brand-heading hover:scale-105 cursor-pointer flex items-center gap-1"
+                      >
+                        <span className="text-sm leading-none">✦</span>
+                      </button>
+                    </div>
+
                     {/* Monogram foil color selector */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       <button
                         type="button"
                         onClick={() => {
                           setFoilColor("gold");
                           setCustomized(true);
                         }}
-                        className={`flex items-center space-x-2 px-3.5 py-2.5 border rounded-xs transition-all text-[10px] tracking-wider font-semibold uppercase ${
+                        className={`flex items-center space-x-2 px-3 py-2.5 border rounded-xs transition-all text-[10px] tracking-wider font-semibold uppercase cursor-pointer ${
                           foilColor === "gold"
                             ? "border-brand-primary bg-zinc-50 dark:bg-zinc-800/20 text-brand-heading"
                             : "border-brand-border text-brand-foreground/75 hover:border-brand-primary"
@@ -375,7 +424,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                           setFoilColor("silver");
                           setCustomized(true);
                         }}
-                        className={`flex items-center space-x-2 px-3.5 py-2.5 border rounded-xs transition-all text-[10px] tracking-wider font-semibold uppercase ${
+                        className={`flex items-center space-x-2 px-3 py-2.5 border rounded-xs transition-all text-[10px] tracking-wider font-semibold uppercase cursor-pointer ${
                           foilColor === "silver"
                             ? "border-brand-primary bg-zinc-50 dark:bg-zinc-800/20 text-brand-heading"
                             : "border-brand-border text-brand-foreground/75 hover:border-brand-primary"
@@ -405,7 +454,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 className="w-4 h-4 rounded-xs border-brand-border text-brand-primary focus:ring-brand-primary accent-brand-primary"
               />
               <label htmlFor="giftWrap" className="font-sans text-xs text-brand-foreground/75 cursor-pointer leading-tight select-none">
-                <strong>Premium Gift Wrapping (+$10.00 USD):</strong> Arrives inside our custom cedarwood box.
+                <strong>Premium Gift Wrapping (+{convertAndFormatPrice(10, currency)}):</strong> Arrives inside our custom cedarwood box.
               </label>
             </div>
 

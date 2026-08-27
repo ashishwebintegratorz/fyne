@@ -36,7 +36,7 @@ export const CheckoutSchema = z.object({
       price: z.number().min(0, "Price must be positive"),
       quantity: z.number().int().min(1, "Quantity must be at least 1"),
       color: z.string().optional().default(""),
-      initials: z.string().max(3, "Initials cannot exceed 3 characters").optional().default(""),
+      initials: z.string().max(6, "Initials cannot exceed 4 characters").optional().default(""),
       foilColor: z.enum(["gold", "silver"]).optional().default("gold"),
       giftWrap: z.boolean().default(false),
       image: z.string().optional().default(""),

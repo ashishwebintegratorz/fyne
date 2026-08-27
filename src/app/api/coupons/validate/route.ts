@@ -12,7 +12,16 @@ export async function POST(request: Request) {
     }
 
     const uppercaseCode = code.trim().toUpperCase();
-    const coupon = await Coupon.findOne({ code: uppercaseCode });
+    let coupon = await Coupon.findOne({ code: uppercaseCode });
+
+    if (!coupon && uppercaseCode === "FIRST") {
+      coupon = await Coupon.create({
+        code: "FIRST",
+        type: "percentage",
+        value: 5,
+        active: true
+      });
+    }
 
     if (!coupon) {
       return NextResponse.json({ error: "Invalid coupon code." }, { status: 400 });

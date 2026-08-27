@@ -23,9 +23,18 @@ export async function GET(
       query = { $or: [{ productId: decodedId }, { productId: decodedId.toLowerCase() }] };
     }
 
-    const product = await Product.findOne(query);
+    let product = await Product.findOne(query);
     if (!product) {
-      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+      // Gracefully resolve legacy / alias routes like 'luxury-lip-balm' to the primary product
+      if (decodedId === "luxury-lip-balm" || decodedId === "cocoa-brown" || decodedId === "default") {
+        product = await Product.findOne({
+          $or: [{ productId: "espresso" }, { productId: "cocoa-brown" }, { status: "active" }]
+        }).sort({ createdAt: 1 });
+      }
+
+      if (!product) {
+        return NextResponse.json({ error: "Product not found" }, { status: 404 });
+      }
     }
 
     return NextResponse.json({ success: true, product });

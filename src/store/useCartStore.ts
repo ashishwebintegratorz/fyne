@@ -24,13 +24,13 @@ export interface CurrencyConfig {
 }
 
 export const CURRENCIES: Record<CurrencyCode, CurrencyConfig> = {
-  AED: { code: "AED", symbol: "Dhs.", rate: 3.67, name: "UAE Dirham (AED)" },
-  SAR: { code: "SAR", symbol: "SR", rate: 3.75, name: "Saudi Riyal (SAR)" },
-  QAR: { code: "QAR", symbol: "QR", rate: 3.64, name: "Qatari Riyal (QAR)" },
-  KWD: { code: "KWD", symbol: "KD", rate: 0.31, name: "Kuwaiti Dinar (KWD)" },
-  BHD: { code: "BHD", symbol: "BD", rate: 0.38, name: "Bahraini Dinar (BHD)" },
-  OMR: { code: "OMR", symbol: "RO", rate: 0.38, name: "Omani Rial (OMR)" },
-  USD: { code: "USD", symbol: "$", rate: 1.0, name: "US Dollar (USD)" },
+  AED: { code: "AED", symbol: "AED", rate: 3.67, name: "UAE Dirham (AED)" },
+  SAR: { code: "SAR", symbol: "SAR", rate: 3.75, name: "Saudi Riyal (SAR)" },
+  QAR: { code: "QAR", symbol: "QAR", rate: 3.64, name: "Qatari Riyal (QAR)" },
+  KWD: { code: "KWD", symbol: "KWD", rate: 0.31, name: "Kuwaiti Dinar (KWD)" },
+  BHD: { code: "BHD", symbol: "BHD", rate: 0.38, name: "Bahraini Dinar (BHD)" },
+  OMR: { code: "OMR", symbol: "OMR", rate: 0.38, name: "Omani Rial (OMR)" },
+  USD: { code: "USD", symbol: "$", rate: 1.0, name: "US Dollar ($ USD)" },
 };
 
 interface CartStore {
@@ -117,8 +117,8 @@ export function convertAndFormatPrice(priceUSD: number, currencyCode: CurrencyCo
   const converted = priceUSD * config.rate;
   
   if (config.code === "USD") {
-    return `${config.symbol}${converted.toFixed(2)}`;
+    return `$${converted.toFixed(2)}`;
   }
-  // For GCC currencies (AED, SAR, etc.), display the symbol first and code at the end: Dhs. X.00 AED
-  return `${config.symbol} ${converted.toFixed(2)} ${config.code}`;
+  
+  return `${config.symbol} ${converted.toFixed(2)}`;
 }

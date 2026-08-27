@@ -66,17 +66,17 @@ export default function Home() {
   const { addItem, setCartOpen, currency } = useCartStore();
   const [addedProductId, setAddedProductId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-interface HomepageProduct {
-  productId: string;
-  name: string;
-  price: number;
-  stars: number;
-  reviewsCount: number;
-  isCustomizable: boolean;
-  defaultColor: string;
-  defaultInitials: string;
-  images?: string[];
-}
+  interface HomepageProduct {
+    productId: string;
+    name: string;
+    price: number;
+    stars: number;
+    reviewsCount: number;
+    isCustomizable: boolean;
+    defaultColor: string;
+    defaultInitials: string;
+    images?: string[];
+  }
 
   const [products, setProducts] = useState<HomepageProduct[]>(BEST_SELLERS as HomepageProduct[]);
 
@@ -158,7 +158,7 @@ interface HomepageProduct {
       giftWrap: false,
       image: "",
     });
-    
+
     setAddedProductId(prod.productId);
     setTimeout(() => {
       setAddedProductId(null);
@@ -168,19 +168,19 @@ interface HomepageProduct {
 
   return (
     <div className="flex flex-col w-full bg-white dark:bg-[#0d0c0b] text-brand-foreground font-sans">
-      
+
       {/* 1. Hero Section */}
       <Hero />
 
       {/* 2. Best Sellers Section */}
       <section className="py-24 px-6 md:px-12 bg-white dark:bg-[#0d0c0b]">
         <div className="max-w-7xl mx-auto">
-          
+
           <div className="flex items-baseline justify-between border-b border-brand-border pb-6 mb-12">
             <h2 className="font-serif text-lg md:text-xl font-normal tracking-[0.2em] text-brand-heading uppercase">
               Best Seller
             </h2>
-            
+
             {/* Slider Navigation Controls */}
             <div className="flex items-center space-x-6">
               <div className="hidden sm:flex items-center space-x-2">
@@ -199,9 +199,9 @@ interface HomepageProduct {
                   <ChevronRight size={14} />
                 </button>
               </div>
-              
-              <Link 
-                href="/customizer/luxury-lip-balm" 
+
+              <Link
+                href="/customizer/luxury-lip-balm"
                 className="font-sans text-[10px] tracking-[0.15em] font-semibold text-brand-foreground hover:text-brand-primary uppercase border-b border-brand-foreground pb-0.5"
               >
                 View all
@@ -211,29 +211,29 @@ interface HomepageProduct {
 
           {/* Product Cards Slider Carousel */}
           <div className="relative">
-            <div 
+            <div
               ref={scrollRef}
               className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth gap-6 sm:gap-8 pb-6 scrollbar-none"
               style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
               {products.map((prod) => (
-                <div 
-                  key={prod.productId} 
+                <div
+                  key={prod.productId}
                   className="flex-shrink-0 w-[calc(50%-12px)] sm:w-[calc(50%-16px)] md:w-[calc(33.333%-22px)] snap-start group flex flex-col justify-between text-left space-y-5"
                 >
                   {/* Image Frame - transparent background, uniform size, scaled layout */}
                   <div className="h-44 sm:h-64 w-full bg-transparent flex items-center justify-center relative select-none transition-transform duration-300 group-hover:scale-105">
                     {prod.images && prod.images.length > 0 ? (
-                      <img 
-                        src={prod.images[0]} 
-                        alt={prod.name} 
+                      <img
+                        src={prod.images[0]}
+                        alt={prod.name}
                         className="object-contain max-h-full max-w-full"
                       />
                     ) : (
-                      <PersonalizerPreview 
-                        color={prod.defaultColor || "Cocoa Brown"} 
-                        initials={prod.defaultInitials || "FN"} 
-                        size="md" 
+                      <PersonalizerPreview
+                        color={prod.defaultColor || "Cocoa Brown"}
+                        initials={prod.defaultInitials || "FN"}
+                        size="md"
                         className="w-full h-full"
                       />
                     )}
@@ -244,16 +244,16 @@ interface HomepageProduct {
                     <h3 className="font-sans text-xs tracking-widest font-semibold uppercase text-brand-heading">
                       {prod.name}
                     </h3>
-                    
+
                     {/* Reviews Row */}
                     <div className="flex items-center space-x-1.5 text-yellow-500">
                       <div className="flex">
                         {Array.from({ length: 5 }).map((_, i) => (
-                          <Star 
-                            key={i} 
-                            size={11} 
-                            fill={i < Math.floor(prod.stars) ? "currentColor" : "none"} 
-                            className="currentColor" 
+                          <Star
+                            key={i}
+                            size={11}
+                            fill={i < Math.floor(prod.stars) ? "currentColor" : "none"}
+                            className="currentColor"
                           />
                         ))}
                       </div>
@@ -280,7 +280,7 @@ interface HomepageProduct {
                     </button>
 
                     {prod.isCustomizable && (
-                      <Link 
+                      <Link
                         href={`/customizer/${prod.productId}`}
                         className="block text-center text-[9px] font-sans font-semibold tracking-widest text-brand-foreground/55 hover:text-brand-primary uppercase pt-1 hover-underline w-max mx-auto"
                       >
@@ -304,7 +304,7 @@ interface HomepageProduct {
             Get in touch
           </h2>
           <p className="font-sans text-xs md:text-sm font-light text-brand-foreground/70 leading-relaxed">
-            Order troubles or just curious about our custom leather casings? Feel free to contact our atelier concierge desk anytime!
+            Feel free to contact our atelier concierge desk anytime
           </p>
           <div className="pt-2">
             <Link href="/contact" className="btn-primary inline-block">

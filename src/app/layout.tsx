@@ -29,6 +29,11 @@ export const metadata: Metadata = {
   title: "Fyné | Luxury Personalized Lip Balm",
   description: "Bespoke leather cased lip balms tailored to your initials. Experience handcrafted elegance, organic luxury formulation, and premium gifting.",
   metadataBase: new URL("https://fynebeauty.com"),
+  icons: {
+    icon: "/logo_f.jpeg",
+    shortcut: "/logo_f.jpeg",
+    apple: "/logo_f.jpeg",
+  },
   openGraph: {
     title: "Fyné | Luxury Personalized Lip Balm",
     description: "Bespoke leather cased lip balms tailored to your initials.",

@@ -31,19 +31,19 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative min-h-[60vh] sm:min-h-[90vh] flex items-center justify-start overflow-hidden px-6 sm:px-12 md:px-20 py-16 sm:py-24 bg-[#f3eae0] select-none">
+    <section className="relative min-h-[65vh] sm:min-h-[90vh] flex items-center justify-start overflow-hidden px-6 sm:px-12 md:px-20 py-16 sm:py-24 bg-[#faf8f5] select-none">
       {/* Full-bleed high-end background image */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="/hero-bg.png"
+          src="/home.jpeg"
           alt="Fyné Luxury Leather Casing Lineup"
           fill
           priority
-          className="object-cover object-center lg:object-right-center"
+          className="object-cover object-center md:object-right"
         />
         {/* Refined gradient overlays for excellent text contrast across viewport sizes */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#f3eae0]/80 via-[#f3eae0]/40 to-transparent pointer-events-none md:block hidden" />
-        <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-[#f3eae0]/70 to-[#f3eae0]/90 pointer-events-none md:hidden block" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#faf8f5]/95 via-[#faf8f5]/65 to-transparent pointer-events-none md:block hidden w-3/5" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#faf8f5]/90 via-[#faf8f5]/50 to-transparent pointer-events-none md:hidden block" />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
