@@ -24,6 +24,9 @@ export function proxy(request: NextRequest) {
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
     pathname.startsWith("/access") ||
+    pathname.startsWith("/terms") ||
+    pathname.startsWith("/privacy") ||
+    pathname.startsWith("/refund") ||
     pathname.startsWith("/favicon.ico") ||
     pathname.startsWith("/products") ||
     pathname.startsWith("/.well-known") ||

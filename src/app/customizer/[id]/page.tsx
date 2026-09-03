@@ -23,7 +23,7 @@ interface ProductData {
 const PRODUCTS_DB: Record<string, ProductData> = {
   "cocoa-brown": {
     id: "cocoa-brown",
-    name: "Fyné’s Customise leather case",
+    name: "Monogramed Leather Lip Balm",
     price: 85,
     description: "A luxurious vanilla-scented lip balm housed in Fyné’s signature leather case. Designed to nourish and soften lips while adding a touch of elegance to your everyday essentials.",
     benefits: [
@@ -275,14 +275,15 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <div className="space-y-3">
               <span className="font-sans text-[10px] tracking-[0.25em] font-semibold text-brand-foreground/60 uppercase">MAISON DE FYNÉ</span>
               <h1 className="font-serif text-3xl md:text-5xl font-light tracking-wide leading-tight text-brand-heading uppercase">
-                Fyné’s LEATHER CUSTOM CASING
+                Monogramed Leather Lip Balm
               </h1>
 
-              <div className="flex flex-col sm:flex-row sm:items-center gap-6">
-                <span className="font-sans text-lg font-semibold text-brand-heading">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-5 pt-1">
+                <span className="font-sans text-xl md:text-2xl font-light tracking-wide text-brand-heading">
                   {convertAndFormatPrice(product.price + (giftWrap ? 10 : 0), currency)}
                 </span>
-                <CurrencySelector className="w-full sm:w-48" />
+                <div className="h-4 w-px bg-brand-border hidden sm:block" />
+                <CurrencySelector className="w-full sm:w-auto min-w-[210px]" />
               </div>
             </div>
 

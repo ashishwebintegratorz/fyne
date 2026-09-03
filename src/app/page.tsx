@@ -18,6 +18,7 @@ const BEST_SELLERS = [
     isCustomizable: true,
     defaultColor: "Cocoa Brown",
     defaultInitials: "FN",
+    images: ["/products/cocoa-brown.jpg"],
   },
   {
     productId: "sky-blue",
@@ -28,6 +29,7 @@ const BEST_SELLERS = [
     isCustomizable: true,
     defaultColor: "Celeste Blue",
     defaultInitials: "FN",
+    images: ["/products/sky-blue.png"],
   },
   {
     productId: "midnight-navy",
@@ -38,6 +40,7 @@ const BEST_SELLERS = [
     isCustomizable: true,
     defaultColor: "Midnight Navy",
     defaultInitials: "FN",
+    images: ["/products/midnight-navy.jpg"],
   },
   {
     productId: "forest-green",
@@ -48,6 +51,7 @@ const BEST_SELLERS = [
     isCustomizable: true,
     defaultColor: "Forest Green",
     defaultInitials: "FN",
+    images: ["/products/forest-green.jpg"],
   },
   {
     productId: "ruby-red",
@@ -58,8 +62,39 @@ const BEST_SELLERS = [
     isCustomizable: true,
     defaultColor: "Ruby Red",
     defaultInitials: "FN",
+    images: ["/products/ruby-red.jpg"],
   },
 ];
+
+const COLOR_MAP: Record<string, string> = {
+  emerald: "Emerald",
+  roug: "Rougé",
+  "bleu-nuit": "Bleu nuit",
+  "ros-fuchsia": "Rosé fuchsia",
+  "rose-sakura": "Rosé sakura",
+  capri: "Capri",
+  espresso: "Espresso",
+  "cocoa-brown": "Cocoa Brown",
+  "sky-blue": "Celeste Blue",
+  "midnight-navy": "Midnight Navy",
+  "forest-green": "Forest Green",
+  "ruby-red": "Ruby Red",
+};
+
+const FALLBACK_IMAGE_MAP: Record<string, string> = {
+  emerald: "/products/forest-green.jpg",
+  roug: "/products/ruby-red.jpg",
+  "bleu-nuit": "/products/midnight-navy.jpg",
+  "ros-fuchsia": "/products/ruby-red.jpg",
+  "rose-sakura": "/products/ruby-red.jpg",
+  capri: "/products/sky-blue.png",
+  espresso: "/products/cocoa-brown.jpg",
+  "cocoa-brown": "/products/cocoa-brown.jpg",
+  "sky-blue": "/products/sky-blue.png",
+  "midnight-navy": "/products/midnight-navy.jpg",
+  "forest-green": "/products/forest-green.jpg",
+  "ruby-red": "/products/ruby-red.jpg",
+};
 
 export default function Home() {
   const router = useRouter();
@@ -80,6 +115,8 @@ export default function Home() {
 
   const [products, setProducts] = useState<HomepageProduct[]>(BEST_SELLERS as HomepageProduct[]);
 
+  const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
+
   useEffect(() => {
     async function loadDbProducts() {
       try {
@@ -87,17 +124,21 @@ export default function Home() {
         if (res.ok) {
           const data = await res.json();
           if (data.success && data.products) {
-            const mapped = data.products.map((p: any) => ({
-              productId: p.productId,
-              name: p.name,
-              price: p.price,
-              stars: 5,
-              reviewsCount: 18,
-              isCustomizable: p.isCustomizable ?? true,
-              defaultColor: p.defaultColor || "Cocoa Brown",
-              defaultInitials: p.defaultInitials || "FN",
-              images: p.images || [],
-            }));
+            const mapped = data.products.map((p: any) => {
+              const fallbackImg = FALLBACK_IMAGE_MAP[p.productId] || "/products/cocoa-brown.jpg";
+              const rawImages = (p.images && p.images.length > 0) ? p.images : [fallbackImg];
+              return {
+                productId: p.productId,
+                name: p.name,
+                price: p.price,
+                stars: 5,
+                reviewsCount: 18,
+                isCustomizable: p.isCustomizable ?? true,
+                defaultColor: p.defaultColor || COLOR_MAP[p.productId] || "Cocoa Brown",
+                defaultInitials: p.defaultInitials || "FN",
+                images: rawImages,
+              };
+            });
             setProducts(mapped);
           }
         }
@@ -147,7 +188,7 @@ export default function Home() {
     }
   };
 
-  const handleQuickAdd = (prod: typeof BEST_SELLERS[0]) => {
+  const handleQuickAdd = (prod: HomepageProduct) => {
     addItem({
       productId: prod.productId,
       name: prod.name,
@@ -222,12 +263,16 @@ export default function Home() {
                   className="flex-shrink-0 w-[calc(50%-12px)] sm:w-[calc(50%-16px)] md:w-[calc(33.333%-22px)] snap-start group flex flex-col justify-between text-left space-y-5"
                 >
                   {/* Image Frame - transparent background, uniform size, scaled layout */}
-                  <div className="h-44 sm:h-64 w-full bg-transparent flex items-center justify-center relative select-none transition-transform duration-300 group-hover:scale-105">
-                    {prod.images && prod.images.length > 0 ? (
+                  <Link
+                    href={`/customizer/${prod.productId}`}
+                    className="h-44 sm:h-64 w-full bg-transparent flex items-center justify-center relative select-none transition-transform duration-300 group-hover:scale-105 cursor-pointer"
+                  >
+                    {prod.images && prod.images.length > 0 && !failedImages[prod.productId] ? (
                       <img
                         src={prod.images[0]}
                         alt={prod.name}
-                        className="object-contain max-h-full max-w-full"
+                        onError={() => setFailedImages((prev) => ({ ...prev, [prod.productId]: true }))}
+                        className="object-contain max-h-full max-w-full drop-shadow-sm"
                       />
                     ) : (
                       <PersonalizerPreview
@@ -237,13 +282,15 @@ export default function Home() {
                         className="w-full h-full"
                       />
                     )}
-                  </div>
+                  </Link>
 
                   {/* Meta details */}
                   <div className="space-y-2">
-                    <h3 className="font-sans text-xs tracking-widest font-semibold uppercase text-brand-heading">
-                      {prod.name}
-                    </h3>
+                    <Link href={`/customizer/${prod.productId}`}>
+                      <h3 className="font-sans text-xs tracking-widest font-semibold uppercase text-brand-heading hover:opacity-75 transition-opacity">
+                        {prod.name}
+                      </h3>
+                    </Link>
 
                     {/* Reviews Row */}
                     <div className="flex items-center space-x-1.5 text-yellow-500">

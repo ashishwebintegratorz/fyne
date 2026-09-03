@@ -26,11 +26,17 @@ export default function Footer() {
             © {new Date().getFullYear()} FYNÉ
           </p>
           <div className="flex justify-center space-x-6 text-[10px] tracking-[0.1em] text-brand-foreground/55 font-light pt-2">
-            <button className="hover:text-brand-primary cursor-pointer">Terms & Conditions</button>
+            <Link href="/terms" className="hover:text-brand-primary transition-colors cursor-pointer">
+              Terms & Conditions
+            </Link>
             <span>•</span>
-            <button className="hover:text-brand-primary cursor-pointer">Privacy Policy</button>
+            <Link href="/privacy" className="hover:text-brand-primary transition-colors cursor-pointer">
+              Privacy Policy
+            </Link>
             <span>•</span>
-            <button className="hover:text-brand-primary cursor-pointer">Refund Policy</button>
+            <Link href="/refund" className="hover:text-brand-primary transition-colors cursor-pointer">
+              Refund Policy
+            </Link>
           </div>
           <p className="text-[10px] tracking-[0.15em] text-brand-foreground/70 font-light pt-3 lowercase first-letter:uppercase">
             Website Designed with ❤️ by{" "}
