@@ -6,107 +6,77 @@ import { useRouter } from "next/navigation";
 import { useCartStore, convertAndFormatPrice } from "@/store/useCartStore";
 import PersonalizerPreview from "@/components/PersonalizerPreview";
 import Hero from "@/components/Hero";
-import { ArrowRight, Star, ShoppingBag, CreditCard, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, ShoppingBag, ChevronLeft, ChevronRight } from "lucide-react";
 
 const BEST_SELLERS = [
   {
-    productId: "cocoa-brown",
-    name: "Cocoa Brown Crocodile Set",
-    price: 85,
-    stars: 5,
-    reviewsCount: 18,
+    productId: "espresso",
+    name: "Espresso Leather Casing",
+    price: 46,
     isCustomizable: true,
-    defaultColor: "Cocoa Brown",
-    defaultInitials: "FN",
-    images: ["/products/cocoa-brown.jpg"],
+    defaultColor: "Espresso",
+    defaultInitials: "",
   },
   {
-    productId: "sky-blue",
-    name: "Celeste Sky Blue Crocodile Set",
-    price: 85,
-    stars: 5,
-    reviewsCount: 15,
+    productId: "capri",
+    name: "Capri Sky Blue Casing",
+    price: 46,
     isCustomizable: true,
-    defaultColor: "Celeste Blue",
-    defaultInitials: "FN",
-    images: ["/products/sky-blue.png"],
+    defaultColor: "Capri",
+    defaultInitials: "",
   },
   {
-    productId: "midnight-navy",
-    name: "Midnight Navy Crocodile Set",
-    price: 85,
-    stars: 4.9,
-    reviewsCount: 22,
+    productId: "bleu-nuit",
+    name: "Bleu Nuit Navy Casing",
+    price: 46,
     isCustomizable: true,
-    defaultColor: "Midnight Navy",
-    defaultInitials: "FN",
-    images: ["/products/midnight-navy.jpg"],
+    defaultColor: "Bleu nuit",
+    defaultInitials: "",
   },
   {
-    productId: "forest-green",
-    name: "Emerald Forest Green Set",
-    price: 85,
-    stars: 5,
-    reviewsCount: 19,
+    productId: "emerald",
+    name: "Emerald Forest Casing",
+    price: 46,
     isCustomizable: true,
-    defaultColor: "Forest Green",
-    defaultInitials: "FN",
-    images: ["/products/forest-green.jpg"],
+    defaultColor: "Emerald",
+    defaultInitials: "",
   },
   {
-    productId: "ruby-red",
-    name: "Ruby Red Crocodile Set",
-    price: 85,
-    stars: 4.8,
-    reviewsCount: 26,
+    productId: "roug",
+    name: "Rougé Burgundy Casing",
+    price: 46,
     isCustomizable: true,
-    defaultColor: "Ruby Red",
-    defaultInitials: "FN",
-    images: ["/products/ruby-red.jpg"],
+    defaultColor: "Rougé",
+    defaultInitials: "",
+  },
+  {
+    productId: "rose-sakura",
+    name: "Rosé Sakura Casing",
+    price: 46,
+    isCustomizable: true,
+    defaultColor: "Rosé sakura",
+    defaultInitials: "",
+  },
+  {
+    productId: "ros-fuchsia",
+    name: "Rosé Fuchsia Casing",
+    price: 46,
+    isCustomizable: true,
+    defaultColor: "Rosé fuchsia",
+    defaultInitials: "",
   },
 ];
-
-const COLOR_MAP: Record<string, string> = {
-  emerald: "Emerald",
-  roug: "Rougé",
-  "bleu-nuit": "Bleu nuit",
-  "ros-fuchsia": "Rosé fuchsia",
-  "rose-sakura": "Rosé sakura",
-  capri: "Capri",
-  espresso: "Espresso",
-  "cocoa-brown": "Cocoa Brown",
-  "sky-blue": "Celeste Blue",
-  "midnight-navy": "Midnight Navy",
-  "forest-green": "Forest Green",
-  "ruby-red": "Ruby Red",
-};
-
-const FALLBACK_IMAGE_MAP: Record<string, string> = {
-  emerald: "/products/forest-green.jpg",
-  roug: "/products/ruby-red.jpg",
-  "bleu-nuit": "/products/midnight-navy.jpg",
-  "ros-fuchsia": "/products/ruby-red.jpg",
-  "rose-sakura": "/products/ruby-red.jpg",
-  capri: "/products/sky-blue.png",
-  espresso: "/products/cocoa-brown.jpg",
-  "cocoa-brown": "/products/cocoa-brown.jpg",
-  "sky-blue": "/products/sky-blue.png",
-  "midnight-navy": "/products/midnight-navy.jpg",
-  "forest-green": "/products/forest-green.jpg",
-  "ruby-red": "/products/ruby-red.jpg",
-};
 
 export default function Home() {
   const router = useRouter();
   const { addItem, setCartOpen, currency } = useCartStore();
   const [addedProductId, setAddedProductId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
   interface HomepageProduct {
     productId: string;
     name: string;
     price: number;
-    stars: number;
-    reviewsCount: number;
     isCustomizable: boolean;
     defaultColor: string;
     defaultInitials: string;
@@ -115,8 +85,6 @@ export default function Home() {
 
   const [products, setProducts] = useState<HomepageProduct[]>(BEST_SELLERS as HomepageProduct[]);
 
-  const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
-
   useEffect(() => {
     async function loadDbProducts() {
       try {
@@ -124,21 +92,15 @@ export default function Home() {
         if (res.ok) {
           const data = await res.json();
           if (data.success && data.products) {
-            const mapped = data.products.map((p: any) => {
-              const fallbackImg = FALLBACK_IMAGE_MAP[p.productId] || "/products/cocoa-brown.jpg";
-              const rawImages = (p.images && p.images.length > 0) ? p.images : [fallbackImg];
-              return {
-                productId: p.productId,
-                name: p.name,
-                price: p.price,
-                stars: 5,
-                reviewsCount: 18,
-                isCustomizable: p.isCustomizable ?? true,
-                defaultColor: p.defaultColor || COLOR_MAP[p.productId] || "Cocoa Brown",
-                defaultInitials: p.defaultInitials || "FN",
-                images: rawImages,
-              };
-            });
+            const mapped = data.products.map((p: any) => ({
+              productId: p.productId,
+              name: p.name,
+              price: p.price,
+              isCustomizable: p.isCustomizable ?? true,
+              defaultColor: p.defaultColor || p.name,
+              defaultInitials: p.defaultInitials || "",
+              images: p.images || [],
+            }));
             setProducts(mapped);
           }
         }
@@ -179,7 +141,6 @@ export default function Home() {
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
       const { scrollLeft, clientWidth } = scrollRef.current;
-      // Scroll by 1 card approx on mobile, or 1/3 viewport width on desktop
       const scrollAmount = window.innerWidth < 768 ? clientWidth * 0.9 : clientWidth * 0.35;
       scrollRef.current.scrollTo({
         left: direction === "left" ? scrollLeft - scrollAmount : scrollLeft + scrollAmount,
@@ -195,7 +156,7 @@ export default function Home() {
       price: prod.price,
       quantity: 1,
       color: prod.isCustomizable ? prod.defaultColor || "Cocoa Brown" : "",
-      initials: prod.isCustomizable ? prod.defaultInitials || "FN" : "",
+      initials: prod.isCustomizable ? prod.defaultInitials || "" : "",
       giftWrap: false,
       image: "",
     });
@@ -262,54 +223,28 @@ export default function Home() {
                   key={prod.productId}
                   className="flex-shrink-0 w-[calc(50%-12px)] sm:w-[calc(50%-16px)] md:w-[calc(33.333%-22px)] snap-start group flex flex-col justify-between text-left space-y-5"
                 >
-                  {/* Image Frame - transparent background, uniform size, scaled layout */}
+                  {/* Image Frame - transparent background, uniform size, centered */}
                   <Link
                     href={`/customizer/${prod.productId}`}
-                    className="h-44 sm:h-64 w-full bg-transparent flex items-center justify-center relative select-none transition-transform duration-300 group-hover:scale-105 cursor-pointer"
+                    className="h-44 sm:h-56 w-full bg-transparent flex items-center justify-center relative select-none transition-transform duration-300 group-hover:scale-105 p-2 cursor-pointer"
                   >
-                    {prod.images && prod.images.length > 0 && !failedImages[prod.productId] ? (
-                      <img
-                        src={prod.images[0]}
-                        alt={prod.name}
-                        onError={() => setFailedImages((prev) => ({ ...prev, [prod.productId]: true }))}
-                        className="object-contain max-h-full max-w-full drop-shadow-sm"
-                      />
-                    ) : (
-                      <PersonalizerPreview
-                        color={prod.defaultColor || "Cocoa Brown"}
-                        initials={prod.defaultInitials || "FN"}
-                        size="md"
-                        className="w-full h-full"
-                      />
-                    )}
+                    <PersonalizerPreview
+                      color={prod.defaultColor || prod.name}
+                      initials={prod.defaultInitials || ""}
+                      size="lg"
+                      className="w-full h-full"
+                    />
                   </Link>
 
                   {/* Meta details */}
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <Link href={`/customizer/${prod.productId}`}>
                       <h3 className="font-sans text-xs tracking-widest font-semibold uppercase text-brand-heading hover:opacity-75 transition-opacity">
                         {prod.name}
                       </h3>
                     </Link>
 
-                    {/* Reviews Row */}
-                    <div className="flex items-center space-x-1.5 text-yellow-500">
-                      <div className="flex">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star
-                            key={i}
-                            size={11}
-                            fill={i < Math.floor(prod.stars) ? "currentColor" : "none"}
-                            className="currentColor"
-                          />
-                        ))}
-                      </div>
-                      <span className="text-[10px] text-brand-foreground/50 tracking-wider">
-                        {prod.stars.toFixed(1)} ({prod.reviewsCount} reviews)
-                      </span>
-                    </div>
-
-                    {/* Formatted GCC Currency Price */}
+                    {/* Formatted Currency Price */}
                     <span className="font-sans text-xs font-semibold block text-brand-heading">
                       {convertAndFormatPrice(prod.price, currency)}
                     </span>

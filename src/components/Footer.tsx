@@ -38,17 +38,6 @@ export default function Footer() {
               Refund Policy
             </Link>
           </div>
-          <p className="text-[10px] tracking-[0.15em] text-brand-foreground/70 font-light pt-3 lowercase first-letter:uppercase">
-            Website Designed with ❤️ by{" "}
-            <a
-              href="https://webintegratorz.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-brand-primary underline underline-offset-4 font-semibold text-brand-heading normal-case transition-colors"
-            >
-              Webintegratorz Technologies
-            </a>
-          </p>
         </div>
 
       </div>

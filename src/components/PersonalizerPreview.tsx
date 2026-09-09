@@ -22,8 +22,8 @@ export const LEATHER_COLORS: Record<string, { hex: string; image: string; desc: 
   "Forest Green": { hex: "#1b4d3e", image: "/products/forest-green.jpg", desc: "Crocodile Embossed Green" },
   "Capri": { hex: "#4ba3e3", image: "/products/sky-blue.png", desc: "Crocodile Embossed Capri" },
   "Celeste Blue": { hex: "#4ba3e3", image: "/products/sky-blue.png", desc: "Crocodile Embossed Sky" },
-  "Rosé sakura": { hex: "#e4a5b4", image: "/products/ruby-red.jpg", desc: "Crocodile Embossed Sakura" },
-  "Rosé fuchsia": { hex: "#c1174a", image: "/products/ruby-red.jpg", desc: "Crocodile Embossed Fuchsia" },
+  "Rosé sakura": { hex: "#e4a5b4", image: "/uploads/1786670563785-fyne_pink_product_super_white_980x980.jpg", desc: "Crocodile Embossed Sakura" },
+  "Rosé fuchsia": { hex: "#c1174a", image: "/uploads/1786670812123-fyne_hot_pink_product_super_white_980x980.jpg", desc: "Crocodile Embossed Fuchsia" },
 };
 
 // Global shared cache and fetch promise to prevent duplicate concurrent API requests
