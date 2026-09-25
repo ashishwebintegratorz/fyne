@@ -131,50 +131,9 @@ export default function Navbar() {
           {/* Right Action Icons */}
           <div className="flex items-center space-x-5">
             
-            {/* Header Currency Selector (Custom Premium Dropdown) */}
-            <div className="hidden md:block relative">
-              <button
-                onClick={() => setCurrencyOpen(!currencyOpen)}
-                className="flex items-center space-x-1.5 text-brand-foreground hover:text-brand-primary p-1 cursor-pointer font-sans text-[10px] tracking-[0.18em] font-semibold transition-colors uppercase border-r border-brand-border/60 pr-4 mr-1 select-none"
-                aria-label="Select Currency"
-              >
-                <span>{currency} ({CURRENCIES[currency]?.symbol})</span>
-                <ChevronDown size={10} className={`transform transition-transform duration-200 ${currencyOpen ? "rotate-180" : ""}`} />
-              </button>
-
-              <AnimatePresence>
-                {currencyOpen && (
-                  <>
-                    <div 
-                      className="fixed inset-0 z-40" 
-                      onClick={() => setCurrencyOpen(false)}
-                    />
-                    <motion.div
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 5 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute right-0 mt-2.5 w-44 bg-white dark:bg-[#0d0c0b] border border-brand-border shadow-lg z-50 py-1"
-                    >
-                      {Object.values(CURRENCIES).map((c) => (
-                        <button
-                          key={c.code}
-                          onClick={() => {
-                            setCurrency(c.code);
-                            setCurrencyOpen(false);
-                          }}
-                          className={`w-full text-left px-4 py-2.5 text-[10px] tracking-wider font-semibold uppercase hover:bg-brand-bg-gray dark:hover:bg-zinc-900 transition-colors flex justify-between items-center cursor-pointer ${
-                            currency === c.code ? "text-brand-primary bg-brand-bg-gray/60 dark:bg-zinc-900/30" : "text-brand-foreground/75"
-                          }`}
-                        >
-                          <span>{c.name.split(" (")[0]}</span>
-                          <span className="opacity-55 text-[9px] font-normal">{c.symbol} {c.code}</span>
-                        </button>
-                      ))}
-                    </motion.div>
-                  </>
-                )}
-              </AnimatePresence>
+            {/* Header Currency Badge (AED) */}
+            <div className="hidden md:flex items-center text-brand-foreground border-r border-brand-border/60 pr-4 mr-1 select-none font-sans text-[10px] tracking-[0.18em] font-semibold uppercase">
+              <span>AED</span>
             </div>
 
             {/* Search Icon (OVIA style) */}
@@ -260,33 +219,6 @@ export default function Navbar() {
                 </motion.div>
               ))}
             </div>
-
-            {/* Mobile Currency Selector at bottom of drawer */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: navLinks.length * 0.04 }}
-              className="pt-6 border-t border-brand-border"
-            >
-              <label className="font-sans text-[8px] tracking-[0.2em] font-semibold text-brand-foreground/50 uppercase block mb-3 select-none">
-                SELECT CURRENCY
-              </label>
-              <div className="grid grid-cols-4 gap-2">
-                {Object.values(CURRENCIES).map((c) => (
-                  <button
-                    key={c.code}
-                    onClick={() => setCurrency(c.code)}
-                    className={`py-2 text-[9px] tracking-widest font-semibold border text-center uppercase transition-all rounded-xs cursor-pointer ${
-                      currency === c.code
-                        ? "border-brand-primary text-brand-primary bg-brand-bg-gray dark:bg-zinc-900/40"
-                        : "border-brand-border text-brand-foreground/70 hover:border-brand-foreground/45"
-                    }`}
-                  >
-                    {c.code}
-                  </button>
-                ))}
-              </div>
-            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

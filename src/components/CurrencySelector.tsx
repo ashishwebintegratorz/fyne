@@ -12,11 +12,6 @@ interface CurrencySelectorProps {
 
 const CURRENCY_META: Record<CurrencyCode, { flag: string; region: string; cleanName: string }> = {
   AED: { flag: "🇦🇪", region: "UAE", cleanName: "UAE Dirham" },
-  SAR: { flag: "🇸🇦", region: "KSA", cleanName: "Saudi Riyal" },
-  QAR: { flag: "🇶🇦", region: "Qatar", cleanName: "Qatari Riyal" },
-  KWD: { flag: "🇰🇼", region: "Kuwait", cleanName: "Kuwaiti Dinar" },
-  BHD: { flag: "🇧🇭", region: "Bahrain", cleanName: "Bahraini Dinar" },
-  OMR: { flag: "🇴🇲", region: "Oman", cleanName: "Omani Rial" },
   USD: { flag: "🌐", region: "Global", cleanName: "US Dollar" },
 };
 

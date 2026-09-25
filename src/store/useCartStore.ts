@@ -14,23 +14,17 @@ export interface CartItem {
   image: string;
 }
 
-export type CurrencyCode = "AED" | "SAR" | "QAR" | "KWD" | "BHD" | "OMR" | "USD";
+export type CurrencyCode = "AED";
 
 export interface CurrencyConfig {
   code: CurrencyCode;
   symbol: string;
-  rate: number; // rate relative to 1 USD
+  rate: number; // rate relative to 1 USD base
   name: string;
 }
 
 export const CURRENCIES: Record<CurrencyCode, CurrencyConfig> = {
   AED: { code: "AED", symbol: "AED", rate: 3.67, name: "UAE Dirham (AED)" },
-  SAR: { code: "SAR", symbol: "SAR", rate: 3.75, name: "Saudi Riyal (SAR)" },
-  QAR: { code: "QAR", symbol: "QAR", rate: 3.64, name: "Qatari Riyal (QAR)" },
-  KWD: { code: "KWD", symbol: "KWD", rate: 0.31, name: "Kuwaiti Dinar (KWD)" },
-  BHD: { code: "BHD", symbol: "BHD", rate: 0.38, name: "Bahraini Dinar (BHD)" },
-  OMR: { code: "OMR", symbol: "OMR", rate: 0.38, name: "Omani Rial (OMR)" },
-  USD: { code: "USD", symbol: "$", rate: 1.0, name: "US Dollar ($ USD)" },
 };
 
 interface CartStore {
@@ -112,13 +106,8 @@ export const useCartStore = create<CartStore>()(
 );
 
 // Currency converter utility helper
-export function convertAndFormatPrice(priceUSD: number, currencyCode: CurrencyCode): string {
-  const config = CURRENCIES[currencyCode] || CURRENCIES.AED;
+export function convertAndFormatPrice(priceUSD: number, currencyCode?: CurrencyCode): string {
+  const config = CURRENCIES.AED;
   const converted = priceUSD * config.rate;
-  
-  if (config.code === "USD") {
-    return `$${converted.toFixed(2)}`;
-  }
-  
   return `${config.symbol} ${converted.toFixed(2)}`;
 }
