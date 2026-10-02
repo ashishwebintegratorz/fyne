@@ -3,7 +3,7 @@
 import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { useCartStore, convertAndFormatPrice } from "@/store/useCartStore";
-import PersonalizerPreview, { LEATHER_COLORS } from "@/components/PersonalizerPreview";
+import PersonalizerPreview, { LEATHER_COLORS, CASING_SWATCHES } from "@/components/PersonalizerPreview";
 import CurrencySelector from "@/components/CurrencySelector";
 import { ArrowRight, Check, Plus, Minus, HelpCircle } from "lucide-react";
 
@@ -20,133 +20,59 @@ interface ProductData {
   images?: string[];
 }
 
-const PRODUCTS_DB: Record<string, ProductData> = {
-  "cocoa-brown": {
-    id: "cocoa-brown",
-    name: "Monogramed Leather Lip Balm",
-    price: 85,
-    description: "A luxurious vanilla-scented lip balm housed in Fyné’s signature leather case. Designed to nourish and soften lips while adding a touch of elegance to your everyday essentials.",
-    benefits: [
-      "Scent: Warm Vanilla",
-      "Texture: Smooth, lightweight, and non-sticky",
-      "Benefits: Hydrates, softens, and helps protect dry lips",
-      "Finish: Natural, comfortable shine",
-      "Packaging: Premium leather case designed for everyday elegance",
-      "Perfect for: Daily use, gifting, and on-the-go touchups"
-    ],
-    faqs: [
-      { q: "How do I swap balm refills?", a: "Simply twist the inner gold cap counter-clockwise to slide the cartridge out, then drop in your new cartridge and twist clockwise to lock." },
-      { q: "Can I clean the leather sleeve?", a: "Yes. Use a dry micro-fiber cloth to remove dust. Avoid using alcohol or strong chemicals that can dissolve the leather's natural protectants." },
-      { q: "Is the monogram font customizable?", a: "We stamp all sleeves in a premium Serif typeface resembling high-end luxury engraving." }
-    ],
-    isCustomizable: true,
-    defaultColor: "Cocoa Brown",
-    defaultInitials: "FN",
-  },
-  "sky-blue": {
-    id: "sky-blue",
-    name: "Celeste Sky Blue Crocodile Set",
-    price: 85,
-    description: "A luxurious vanilla-scented lip balm housed in Fyné’s signature leather case. Designed to nourish and soften lips while adding a touch of elegance to your everyday essentials.",
-    benefits: [
-      "Scent: Warm Vanilla",
-      "Texture: Smooth, lightweight, and non-sticky",
-      "Benefits: Hydrates, softens, and helps protect dry lips",
-      "Finish: Natural, comfortable shine",
-      "Packaging: Premium leather case designed for everyday elegance",
-      "Perfect for: Daily use, gifting, and on-the-go touchups"
-    ],
-    faqs: [
-      { q: "How do I swap balm refills?", a: "Simply twist the inner gold cap counter-clockwise to slide the cartridge out, then drop in your new cartridge and twist clockwise to lock." },
-      { q: "Can I clean the leather sleeve?", a: "Yes. Use a dry micro-fiber cloth to remove dust. Avoid using alcohol or strong chemicals that can dissolve the leather's natural protectants." },
-      { q: "Is the monogram font customizable?", a: "We stamp all sleeves in a premium Serif typeface resembling high-end luxury engraving." }
-    ],
-    isCustomizable: true,
-    defaultColor: "Celeste Blue",
-    defaultInitials: "FN",
-  },
-  "midnight-navy": {
-    id: "midnight-navy",
-    name: "Midnight Navy Crocodile Set",
-    price: 85,
-    description: "A luxurious vanilla-scented lip balm housed in Fyné’s signature leather case. Designed to nourish and soften lips while adding a touch of elegance to your everyday essentials.",
-    benefits: [
-      "Scent: Warm Vanilla",
-      "Texture: Smooth, lightweight, and non-sticky",
-      "Benefits: Hydrates, softens, and helps protect dry lips",
-      "Finish: Natural, comfortable shine",
-      "Packaging: Premium leather case designed for everyday elegance",
-      "Perfect for: Daily use, gifting, and on-the-go touchups"
-    ],
-    faqs: [
-      { q: "How do I swap balm refills?", a: "Simply twist the inner gold cap counter-clockwise to slide the cartridge out, then drop in your new cartridge and twist clockwise to lock." },
-      { q: "Can I clean the leather sleeve?", a: "Yes. Use a dry micro-fiber cloth to remove dust. Avoid using alcohol or strong chemicals that can dissolve the leather's natural protectants." },
-      { q: "Is the monogram font customizable?", a: "We stamp all sleeves in a premium Serif typeface resembling high-end luxury engraving." }
-    ],
-    isCustomizable: true,
-    defaultColor: "Midnight Navy",
-    defaultInitials: "FN",
-  },
-  "forest-green": {
-    id: "forest-green",
-    name: "Emerald Forest Green Set",
-    price: 85,
-    description: "A luxurious vanilla-scented lip balm housed in Fyné’s signature leather case. Designed to nourish and soften lips while adding a touch of elegance to your everyday essentials.",
-    benefits: [
-      "Scent: Warm Vanilla",
-      "Texture: Smooth, lightweight, and non-sticky",
-      "Benefits: Hydrates, softens, and helps protect dry lips",
-      "Finish: Natural, comfortable shine",
-      "Packaging: Premium leather case designed for everyday elegance",
-      "Perfect for: Daily use, gifting, and on-the-go touchups"
-    ],
-    faqs: [
-      { q: "How do I swap balm refills?", a: "Simply twist the inner gold cap counter-clockwise to slide the cartridge out, then drop in your new cartridge and twist clockwise to lock." },
-      { q: "Can I clean the leather sleeve?", a: "Yes. Use a dry micro-fiber cloth to remove dust. Avoid using alcohol or strong chemicals that can dissolve the leather's natural protectants." },
-      { q: "Is the monogram font customizable?", a: "We stamp all sleeves in a premium Serif typeface resembling high-end luxury engraving." }
-    ],
-    isCustomizable: true,
-    defaultColor: "Forest Green",
-    defaultInitials: "FN",
-  },
-  "ruby-red": {
-    id: "ruby-red",
-    name: "Ruby Red Crocodile Set",
-    price: 85,
-    description: "A luxurious vanilla-scented lip balm housed in Fyné’s signature leather case. Designed to nourish and soften lips while adding a touch of elegance to your everyday essentials.",
-    benefits: [
-      "Scent: Warm Vanilla",
-      "Texture: Smooth, lightweight, and non-sticky",
-      "Benefits: Hydrates, softens, and helps protect dry lips",
-      "Finish: Natural, comfortable shine",
-      "Packaging: Premium leather case designed for everyday elegance",
-      "Perfect for: Daily use, gifting, and on-the-go touchups"
-    ],
-    faqs: [
-      { q: "How do I swap balm refills?", a: "Simply twist the inner gold cap counter-clockwise to slide the cartridge out, then drop in your new cartridge and twist clockwise to lock." },
-      { q: "Can I clean the leather sleeve?", a: "Yes. Use a dry micro-fiber cloth to remove dust. Avoid using alcohol or strong chemicals that can dissolve the leather's natural protectants." },
-      { q: "Is the monogram font customizable?", a: "We stamp all sleeves in a premium Serif typeface resembling high-end luxury engraving." }
-    ],
-    isCustomizable: true,
-    defaultColor: "Ruby Red",
-    defaultInitials: "FN",
-  },
+const DEFAULT_PRODUCT_DATA: Omit<ProductData, "id" | "name" | "defaultColor"> = {
+  price: 46,
+  description: "A luxurious vanilla-scented lip balm housed in Fyné’s signature leather case. Designed to nourish and soften lips while adding a touch of elegance to your everyday essentials.",
+  benefits: [
+    "Scent: Warm Vanilla",
+    "Texture: Smooth, lightweight, and non-sticky",
+    "Benefits: Hydrates, softens, and helps protect dry lips",
+    "Finish: Natural, comfortable shine",
+    "Packaging: Premium leather case designed for everyday elegance",
+    "Perfect for: Daily use, gifting, and on-the-go touchups"
+  ],
+  faqs: [
+    { q: "How do I swap balm refills?", a: "Simply twist the inner gold cap counter-clockwise to slide the cartridge out, then drop in your new cartridge and twist clockwise to lock." },
+    { q: "Can I clean the leather sleeve?", a: "Yes. Use a dry micro-fiber cloth to remove dust. Avoid using alcohol or strong chemicals that can dissolve the leather's natural protectants." },
+    { q: "Is the monogram font customizable?", a: "We stamp all sleeves in a premium Serif typeface resembling high-end luxury engraving." }
+  ],
+  isCustomizable: true,
+  defaultInitials: "FN",
 };
-// Map legacy slugs so navigation works seamlessly
-PRODUCTS_DB["luxury-lip-balm"] = PRODUCTS_DB["cocoa-brown"];
-PRODUCTS_DB["leather-sleeve-duo"] = PRODUCTS_DB["ruby-red"];
-PRODUCTS_DB["balm-refill-trio"] = PRODUCTS_DB["sky-blue"];
+
+const PRODUCTS_DB: Record<string, ProductData> = {
+  "espresso": { ...DEFAULT_PRODUCT_DATA, id: "espresso", name: "Espresso Leather Casing", defaultColor: "Espresso" },
+  "cocoa-brown": { ...DEFAULT_PRODUCT_DATA, id: "cocoa-brown", name: "Espresso Leather Casing", defaultColor: "Espresso" },
+  "capri": { ...DEFAULT_PRODUCT_DATA, id: "capri", name: "Capri Sky Blue Casing", defaultColor: "Capri" },
+  "sky-blue": { ...DEFAULT_PRODUCT_DATA, id: "sky-blue", name: "Capri Sky Blue Casing", defaultColor: "Capri" },
+  "bleu-nuit": { ...DEFAULT_PRODUCT_DATA, id: "bleu-nuit", name: "Bleu Nuit Navy Casing", defaultColor: "Bleu nuit" },
+  "midnight-navy": { ...DEFAULT_PRODUCT_DATA, id: "midnight-navy", name: "Bleu Nuit Navy Casing", defaultColor: "Bleu nuit" },
+  "emerald": { ...DEFAULT_PRODUCT_DATA, id: "emerald", name: "Emerald Forest Casing", defaultColor: "Emerald" },
+  "forest-green": { ...DEFAULT_PRODUCT_DATA, id: "forest-green", name: "Emerald Forest Casing", defaultColor: "Emerald" },
+  "roug": { ...DEFAULT_PRODUCT_DATA, id: "roug", name: "Rougé Burgundy Casing", defaultColor: "Rougé" },
+  "rouge": { ...DEFAULT_PRODUCT_DATA, id: "rouge", name: "Rougé Burgundy Casing", defaultColor: "Rougé" },
+  "ruby-red": { ...DEFAULT_PRODUCT_DATA, id: "ruby-red", name: "Rougé Burgundy Casing", defaultColor: "Rougé" },
+  "rose-sakura": { ...DEFAULT_PRODUCT_DATA, id: "rose-sakura", name: "Rosé Sakura Casing", defaultColor: "Rosé sakura" },
+  "ros-fuchsia": { ...DEFAULT_PRODUCT_DATA, id: "ros-fuchsia", name: "Rosé Fuchsia Casing", defaultColor: "Rosé fuchsia" },
+  "rose-fuchsia": { ...DEFAULT_PRODUCT_DATA, id: "rose-fuchsia", name: "Rosé Fuchsia Casing", defaultColor: "Rosé fuchsia" },
+  "luxury-lip-balm": { ...DEFAULT_PRODUCT_DATA, id: "luxury-lip-balm", name: "Monogramed Leather Lip Balm", defaultColor: "Espresso" },
+  "leather-sleeve-duo": { ...DEFAULT_PRODUCT_DATA, id: "leather-sleeve-duo", name: "Rougé Burgundy Casing", defaultColor: "Rougé" },
+  "balm-refill-trio": { ...DEFAULT_PRODUCT_DATA, id: "balm-refill-trio", name: "Capri Sky Blue Casing", defaultColor: "Capri" },
+};
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { id } = use(params);
   const { addItem, setCartOpen, currency } = useCartStore();
 
-  const [product, setProduct] = useState<ProductData>(PRODUCTS_DB[id] || PRODUCTS_DB["luxury-lip-balm"]);
+  const normalizedId = (id || "").toLowerCase().trim();
+  const fallbackProduct = PRODUCTS_DB[normalizedId] || PRODUCTS_DB["espresso"] || PRODUCTS_DB["luxury-lip-balm"];
 
-  // Customizer inputs
-  const [selectedColor, setSelectedColor] = useState(product.defaultColor || "Cocoa Brown");
-  const [initials, setInitials] = useState(product.defaultInitials || "AM");
+  const [product, setProduct] = useState<ProductData>(fallbackProduct);
+
+  // Customizer inputs - accurately initialized to clicked case color
+  const [selectedColor, setSelectedColor] = useState(fallbackProduct.defaultColor || "Espresso");
+  const [initials, setInitials] = useState(fallbackProduct.defaultInitials || "FN");
   const [foilColor, setFoilColor] = useState<"gold" | "silver">("gold");
   const [qty, setQty] = useState(1);
   const [giftWrap, setGiftWrap] = useState(true);
@@ -162,8 +88,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           const data = await res.json();
           if (data.success && data.colors && data.colors.length > 0) {
             setCasingColors(data.colors);
-            // Default selectedColor to the first casing color option in the database on load
-            setSelectedColor(data.colors[0].name);
           }
         }
       } catch (err) {
@@ -174,6 +98,13 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   }, []);
 
   useEffect(() => {
+    const directMatch = PRODUCTS_DB[normalizedId];
+    if (directMatch) {
+      setProduct(directMatch);
+      setSelectedColor(directMatch.defaultColor || "Espresso");
+      return;
+    }
+
     async function loadDbProduct() {
       try {
         const res = await fetch(`/api/products/${id}`);
@@ -185,37 +116,13 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               id: data.product.productId // map SKU to id
             };
             setProduct(mapped);
-            setSelectedColor((prev) => {
-              // Only overwrite selectedColor if it's the initial default
-              if (prev === "Cocoa Brown" && data.product.defaultColor) {
-                return data.product.defaultColor;
-              }
-              return prev;
-            });
-            setInitials(data.product.defaultInitials || "AM");
+            if (data.product.defaultColor) {
+              setSelectedColor(data.product.defaultColor);
+            }
+            if (data.product.defaultInitials) {
+              setInitials(data.product.defaultInitials);
+            }
             return;
-          }
-        }
-
-        // If product not found (e.g., legacy URL /customizer/luxury-lip-balm),
-        // query the catalog to load the 1st active product.
-        const listRes = await fetch("/api/products");
-        if (listRes.ok) {
-          const listData = await listRes.json();
-          if (listData.success && listData.products && listData.products.length > 0) {
-            const firstProd = listData.products[0];
-            const mapped = {
-              ...firstProd,
-              id: firstProd.productId
-            };
-            setProduct(mapped);
-            setSelectedColor((prev) => {
-              if (prev === "Cocoa Brown" && firstProd.defaultColor) {
-                return firstProd.defaultColor;
-              }
-              return prev;
-            });
-            setInitials(firstProd.defaultInitials || "AM");
           }
         }
       } catch (err) {
@@ -223,7 +130,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       }
     }
     loadDbProduct();
-  }, [id]);
+  }, [id, normalizedId]);
 
   const handleAddToCart = () => {
     addItem({
@@ -302,15 +209,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     <span className="text-brand-foreground font-sans font-light normal-case text-xs">{selectedColor}</span>
                   </h4>
                   <div className="flex flex-wrap gap-2.5">
-                    {(casingColors.length > 0
-                      ? casingColors
-                      : Object.keys(LEATHER_COLORS).map((color) => ({
-                        name: color,
-                        hex: LEATHER_COLORS[color].hex,
-                      }))
-                    ).map((colorObj) => {
+                    {(casingColors.length > 0 ? casingColors : CASING_SWATCHES).map((colorObj) => {
                       const colorName = colorObj.name;
-                      const active = selectedColor === colorName;
+                      const active = selectedColor.toLowerCase().replace(/é/g, "e") === colorName.toLowerCase().replace(/é/g, "e");
                       return (
                         <button
                           key={colorName}
@@ -318,8 +219,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                             setSelectedColor(colorName);
                             setCustomized(true);
                           }}
-                          className={`w-7 h-7 rounded-full border transition-all duration-300 relative ${active ? "border-brand-primary scale-110 shadow-xs" : "border-brand-border hover:scale-105"
-                            }`}
+                          className={`w-7 h-7 rounded-full border transition-all duration-300 relative cursor-pointer ${
+                            active ? "border-brand-primary scale-110 shadow-xs ring-2 ring-brand-primary/30" : "border-brand-border hover:scale-105"
+                          }`}
                           style={{ backgroundColor: colorObj.hex }}
                           title={colorName}
                         >

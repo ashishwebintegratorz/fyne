@@ -11,19 +11,44 @@ interface PersonalizerPreviewProps {
   foilColor?: "gold" | "silver";
 }
 
+export interface CasingOption {
+  name: string;
+  hex: string;
+  image: string;
+  desc: string;
+}
+
+export const CASING_SWATCHES: CasingOption[] = [
+  { name: "Espresso", hex: "#5c4033", image: "/products/cocoa-brown.jpg", desc: "Crocodile Embossed Espresso" },
+  { name: "Bleu nuit", hex: "#1d2951", image: "/products/midnight-navy.jpg", desc: "Crocodile Embossed Navy" },
+  { name: "Emerald", hex: "#1b4d3e", image: "/products/forest-green.jpg", desc: "Crocodile Embossed Emerald" },
+  { name: "Rougé", hex: "#800020", image: "/products/ruby-red.jpg", desc: "Crocodile Embossed Rougé" },
+  { name: "Capri", hex: "#4ba3e3", image: "/products/sky-blue.png", desc: "Crocodile Embossed Capri" },
+  { name: "Rosé sakura", hex: "#e8a7b8", image: "/products/rose-sakura.jpg", desc: "Crocodile Embossed Sakura" },
+  { name: "Rosé fuchsia", hex: "#c2185b", image: "/products/rose-fuchsia.jpg", desc: "Crocodile Embossed Fuchsia" },
+];
+
 export const LEATHER_COLORS: Record<string, { hex: string; image: string; desc: string }> = {
   "Espresso": { hex: "#5c4033", image: "/products/cocoa-brown.jpg", desc: "Crocodile Embossed Espresso" },
   "Cocoa Brown": { hex: "#5c4033", image: "/products/cocoa-brown.jpg", desc: "Crocodile Embossed Cocoa" },
   "Rougé": { hex: "#800020", image: "/products/ruby-red.jpg", desc: "Crocodile Embossed Rougé" },
+  "Rouge": { hex: "#800020", image: "/products/ruby-red.jpg", desc: "Crocodile Embossed Rougé" },
   "Ruby Red": { hex: "#800020", image: "/products/ruby-red.jpg", desc: "Crocodile Embossed Ruby" },
   "Bleu nuit": { hex: "#1d2951", image: "/products/midnight-navy.jpg", desc: "Crocodile Embossed Navy" },
+  "Bleu Nuit": { hex: "#1d2951", image: "/products/midnight-navy.jpg", desc: "Crocodile Embossed Navy" },
   "Midnight Navy": { hex: "#1d2951", image: "/products/midnight-navy.jpg", desc: "Crocodile Embossed Navy" },
   "Emerald": { hex: "#1b4d3e", image: "/products/forest-green.jpg", desc: "Crocodile Embossed Emerald" },
   "Forest Green": { hex: "#1b4d3e", image: "/products/forest-green.jpg", desc: "Crocodile Embossed Green" },
   "Capri": { hex: "#4ba3e3", image: "/products/sky-blue.png", desc: "Crocodile Embossed Capri" },
   "Celeste Blue": { hex: "#4ba3e3", image: "/products/sky-blue.png", desc: "Crocodile Embossed Sky" },
-  "Rosé sakura": { hex: "#e4a5b4", image: "/uploads/1786670563785-fyne_pink_product_super_white_980x980.jpg", desc: "Crocodile Embossed Sakura" },
-  "Rosé fuchsia": { hex: "#c1174a", image: "/uploads/1786670812123-fyne_hot_pink_product_super_white_980x980.jpg", desc: "Crocodile Embossed Fuchsia" },
+  "Rosé sakura": { hex: "#e8a7b8", image: "/products/rose-sakura.jpg", desc: "Crocodile Embossed Sakura" },
+  "Rose sakura": { hex: "#e8a7b8", image: "/products/rose-sakura.jpg", desc: "Crocodile Embossed Sakura" },
+  "Rosé Sakura": { hex: "#e8a7b8", image: "/products/rose-sakura.jpg", desc: "Crocodile Embossed Sakura" },
+  "Rose Sakura": { hex: "#e8a7b8", image: "/products/rose-sakura.jpg", desc: "Crocodile Embossed Sakura" },
+  "Rosé fuchsia": { hex: "#c2185b", image: "/products/rose-fuchsia.jpg", desc: "Crocodile Embossed Fuchsia" },
+  "Rose fuchsia": { hex: "#c2185b", image: "/products/rose-fuchsia.jpg", desc: "Crocodile Embossed Fuchsia" },
+  "Rosé Fuchsia": { hex: "#c2185b", image: "/products/rose-fuchsia.jpg", desc: "Crocodile Embossed Fuchsia" },
+  "Rose Fuchsia": { hex: "#c2185b", image: "/products/rose-fuchsia.jpg", desc: "Crocodile Embossed Fuchsia" },
 };
 
 // Global shared cache and fetch promise to prevent duplicate concurrent API requests
@@ -68,15 +93,15 @@ export default function PersonalizerPreview({
   }, [dbColors]);
 
   const safeColor = color || "Espresso";
-  const normalizedColor = safeColor.trim().toLowerCase();
+  const normalizedColor = safeColor.trim().toLowerCase().replace(/é/g, "e");
 
   // Check direct LEATHER_COLORS dictionary first, then DB image
   const staticEntry = Object.entries(LEATHER_COLORS).find(
-    ([k]) => k.toLowerCase() === normalizedColor
+    ([k]) => k.toLowerCase().replace(/é/g, "e") === normalizedColor
   );
 
   const dbMatch = dbColors?.find(
-    (c) => c.name && c.name.toLowerCase() === normalizedColor
+    (c) => c.name && c.name.toLowerCase().replace(/é/g, "e") === normalizedColor
   );
 
   const imageSrc = staticEntry?.[1]?.image || dbMatch?.image || "/products/cocoa-brown.jpg";
@@ -109,6 +134,7 @@ export default function PersonalizerPreview({
             src={imageSrc}
             alt={`${color} leather case`}
             fill
+            unoptimized
             sizes="(max-w-768px) 100vw, 50vw"
             className="object-contain"
             priority
