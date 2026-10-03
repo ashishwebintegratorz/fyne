@@ -13,9 +13,16 @@ import {
   DollarSign,
   Package,
   Eye,
-  EyeOff
+  EyeOff,
+  Palette,
+  FolderPlus,
+  HelpCircle,
+  Check,
+  Type,
+  MoveVertical
 } from "lucide-react";
 import { useCartStore, convertAndFormatPrice } from "@/store/useCartStore";
+import PersonalizerPreview from "@/components/PersonalizerPreview";
 
 interface ProductType {
   _id?: string;
@@ -23,40 +30,72 @@ interface ProductType {
   name: string;
   price: number;
   description: string;
-  benefits: string[];
+  benefits?: string[];
   faqs: { q: string; a: string }[];
   category: string;
+  defaultColor?: string;
+  colorHex?: string;
+  textPosition?: "top" | "center" | "bottom" | "custom";
+  textPositionY?: number;
+  textPositionX?: "left" | "center" | "right";
   stock: number;
   images: string[];
   status: "active" | "draft";
 }
 
+interface CategoryType {
+  _id?: string;
+  name: string;
+  slug: string;
+  description?: string;
+}
+
+const SIGNATURE_COLOR_PRESETS = [
+  { name: "Espresso", hex: "#5c4033" },
+  { name: "Bleu nuit", hex: "#1d2951" },
+  { name: "Emerald", hex: "#1b4d3e" },
+  { name: "Rougé", hex: "#800020" },
+  { name: "Capri", hex: "#4ba3e3" },
+  { name: "Rosé sakura", hex: "#e8a7b8" },
+  { name: "Rosé fuchsia", hex: "#c2185b" },
+];
+
 export default function AdminProductsPage() {
   const { currency } = useCartStore();
 
   const [products, setProducts] = useState<ProductType[]>([]);
+  const [categories, setCategories] = useState<CategoryType[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
 
-  // Modal states
+  // Category Manager Modal state
+  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+  const [newCatName, setNewCatName] = useState("");
+  const [newCatDesc, setNewCatDesc] = useState("");
+  const [creatingCategory, setCreatingCategory] = useState(false);
+
+  // Product Modal states
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductType | null>(null);
 
-  // Form states
+  // Product Form states
   const [productId, setProductId] = useState("");
   const [name, setName] = useState("");
-  const [price, setPrice] = useState(0);
+  const [price, setPrice] = useState(85);
   const [stock, setStock] = useState(100);
   const [category, setCategory] = useState("Lip Balm");
+  const [defaultColor, setDefaultColor] = useState("Espresso");
+  const [colorHex, setColorHex] = useState("#5c4033");
+  const [textPosition, setTextPosition] = useState<"top" | "center" | "bottom" | "custom">("center");
+  const [textPositionY, setTextPositionY] = useState<number>(48);
+  const [textPositionX, setTextPositionX] = useState<"left" | "center" | "right">("center");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<"active" | "draft">("active");
   const [images, setImages] = useState<string[]>([]);
-  const [benefits, setBenefits] = useState<string[]>([]);
   const [faqs, setFaqs] = useState<{ q: string; a: string }[]>([]);
 
-  // Input states for dynamic fields
-  const [newBenefit, setNewBenefit] = useState("");
+  // Dynamic FAQ input states
   const [newFaqQ, setNewFaqQ] = useState("");
   const [newFaqA, setNewFaqA] = useState("");
 
@@ -64,6 +103,7 @@ export default function AdminProductsPage() {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Fetch products & categories
   const fetchProducts = async () => {
     try {
       const res = await fetch("/api/products");
@@ -78,9 +118,93 @@ export default function AdminProductsPage() {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch("/api/categories");
+      if (res.ok) {
+        const data = await res.json();
+        const cats: CategoryType[] = data.categories || [];
+        setCategories(cats);
+      }
+    } catch (err) {
+      console.error("Failed to load categories:", err);
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
+    fetchCategories();
   }, []);
+
+  // Handle Category Creation
+  const handleCreateCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmedName = newCatName.trim();
+    if (!trimmedName || trimmedName.length < 2) {
+      alert("Category name must be at least 2 characters.");
+      return;
+    }
+
+    setCreatingCategory(true);
+    try {
+      const res = await fetch("/api/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: trimmedName, description: newCatDesc.trim() }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setNewCatName("");
+        setNewCatDesc("");
+        await fetchCategories();
+        handleCategoryChange(trimmedName); // Auto-select newly created category in form
+      } else {
+        alert(data.error || "Failed to create category.");
+      }
+    } catch (err) {
+      console.error("Error creating category:", err);
+      alert("Network error: Could not create category.");
+    } finally {
+      setCreatingCategory(false);
+    }
+  };
+
+  // Handle Category Deletion
+  const handleDeleteCategory = async (cat: CategoryType) => {
+    if (!confirm(`Are you sure you want to delete category "${cat.name}"?`)) return;
+
+    try {
+      const target = encodeURIComponent(cat._id || cat.slug);
+      const res = await fetch(`/api/categories/${target}`, {
+        method: "DELETE",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        await fetchCategories();
+        if (category === cat.name) {
+          handleCategoryChange(categories[0]?.name || "Lip Balm");
+        }
+      } else {
+        alert(data.error || "Failed to delete category.");
+      }
+    } catch (err) {
+      console.error("Error deleting category:", err);
+      alert("Network error: Could not delete category.");
+    }
+  };
+
+  // Switch category and adjust positioning defaults if switching to Lipliner
+  const handleCategoryChange = (newCat: string) => {
+    setCategory(newCat);
+    if (newCat.toLowerCase().includes("lipliner")) {
+      setTextPosition("top");
+      setTextPositionY(34);
+    } else if (newCat.toLowerCase().includes("lip balm") && textPosition === "top") {
+      setTextPosition("center");
+      setTextPositionY(48);
+    }
+  };
 
   // Open Modal to create
   const handleOpenCreate = () => {
@@ -89,18 +213,32 @@ export default function AdminProductsPage() {
     setName("");
     setPrice(85);
     setStock(100);
-    setCategory("Lip Balm");
+    const initialCat = categories.some(c => c.name === "Lip Balm") ? "Lip Balm" : (categories[0]?.name || "Lip Balm");
+    setCategory(initialCat);
+    setDefaultColor("Espresso");
+    setColorHex("#5c4033");
+    setTextPosition("center");
+    setTextPositionY(48);
+    setTextPositionX("center");
     setDescription("");
     setStatus("active");
     setImages([]);
-    setBenefits([
-      "Scent: Warm Vanilla",
-      "Texture: Smooth, lightweight, and non-sticky",
-      "Benefits: Hydrates, softens, and helps protect dry lips"
-    ]);
     setFaqs([
-      { q: "How do I swap balm refills?", a: "Simply twist the inner gold cap counter-clockwise to slide the cartridge out, then drop in your new cartridge and twist clockwise to lock." }
+      {
+        q: "How do I swap balm refills?",
+        a: "Simply twist the inner gold cap counter-clockwise to slide the cartridge out, then drop in your new cartridge and twist clockwise to lock."
+      },
+      {
+        q: "Can I clean the leather sleeve?",
+        a: "Yes. Use a dry micro-fiber cloth to remove dust. Avoid using alcohol or strong chemicals that can dissolve the leather's natural protectants."
+      },
+      {
+        q: "Is the monogram font customizable?",
+        a: "We stamp all sleeves in a premium Serif typeface resembling high-end luxury engraving."
+      }
     ]);
+    setNewFaqQ("");
+    setNewFaqA("");
     setModalOpen(true);
   };
 
@@ -111,12 +249,27 @@ export default function AdminProductsPage() {
     setName(prod.name);
     setPrice(prod.price);
     setStock(prod.stock);
-    setCategory(prod.category);
+    setCategory(prod.category || categories[0]?.name || "Lip Balm");
+    setDefaultColor(prod.defaultColor || "Espresso");
+    setColorHex(prod.colorHex || "#5c4033");
+    setTextPosition(prod.textPosition || (prod.category?.toLowerCase().includes("lipliner") ? "top" : "center"));
+    setTextPositionY(prod.textPositionY !== undefined ? prod.textPositionY : (prod.category?.toLowerCase().includes("lipliner") ? 34 : 48));
+    setTextPositionX(prod.textPositionX || "center");
     setDescription(prod.description);
     setStatus(prod.status);
     setImages(prod.images || []);
-    setBenefits(prod.benefits || []);
-    setFaqs(prod.faqs || []);
+    setFaqs(
+      prod.faqs && prod.faqs.length > 0
+        ? prod.faqs
+        : [
+            {
+              q: "How do I swap balm refills?",
+              a: "Simply twist the inner gold cap counter-clockwise to slide the cartridge out, then drop in your new cartridge and twist clockwise to lock."
+            }
+          ]
+    );
+    setNewFaqQ("");
+    setNewFaqA("");
     setModalOpen(true);
   };
 
@@ -178,15 +331,7 @@ export default function AdminProductsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 1. Auto-collect typed benefit if user didn't click "ADD"
-    let currentBenefits = [...benefits];
-    if (newBenefit.trim()) {
-      currentBenefits.push(newBenefit.trim());
-      setNewBenefit("");
-    }
-    currentBenefits = currentBenefits.filter(b => b.trim().length > 0);
-
-    // 2. Auto-collect typed FAQ if user didn't click "ADD FAQ"
+    // Auto-collect typed FAQ if user didn't click "+ ADD FAQ"
     let currentFaqs = [...faqs];
     if (newFaqQ.trim() && newFaqA.trim()) {
       currentFaqs.push({ q: newFaqQ.trim(), a: newFaqA.trim() });
@@ -218,9 +363,13 @@ export default function AdminProductsPage() {
       name: name.trim(),
       price: Number(price) || 0,
       description: description.trim(),
-      benefits: currentBenefits,
       faqs: currentFaqs,
       category: (category || "Lip Balm").trim(),
+      defaultColor: (defaultColor || "").trim(),
+      colorHex: (colorHex || "#5c4033").trim(),
+      textPosition,
+      textPositionY: Number(textPositionY) || 48,
+      textPositionX,
       stock: Number(stock) || 0,
       images,
       status
@@ -257,18 +406,6 @@ export default function AdminProductsPage() {
     }
   };
 
-  // Add Dynamic fields
-  const addBenefit = () => {
-    if (newBenefit.trim()) {
-      setBenefits([...benefits, newBenefit.trim()]);
-      setNewBenefit("");
-    }
-  };
-
-  const removeBenefit = (index: number) => {
-    setBenefits(benefits.filter((_, i) => i !== index));
-  };
-
   const addFaq = () => {
     if (newFaqQ.trim() && newFaqA.trim()) {
       setFaqs([...faqs, { q: newFaqQ.trim(), a: newFaqA.trim() }]);
@@ -283,13 +420,21 @@ export default function AdminProductsPage() {
 
   // Filter products by search and category
   const filteredProducts = products.filter(p => {
-    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.productId.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.productId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p.defaultColor && p.defaultColor.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory = selectedCategory === "all" || p.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const categories = ["all", ...new Set(products.map(p => p.category))];
+  const categoryFilterList = [
+    "all",
+    ...new Set([
+      ...categories.map(c => c.name),
+      ...products.map(p => p.category).filter(Boolean)
+    ])
+  ];
 
   return (
     <div className="space-y-8 text-left">
@@ -300,12 +445,20 @@ export default function AdminProductsPage() {
           <span className="text-[10px] tracking-[0.25em] font-semibold text-brand-foreground/50 uppercase font-sans">INVENTORY</span>
           <h1 className="font-serif text-2xl font-light tracking-wide text-brand-heading uppercase">Product Catalog</h1>
         </div>
-        <button
-          onClick={handleOpenCreate}
-          className="btn-primary py-3.5 px-6 text-[10px] flex items-center justify-center gap-1.5 self-start"
-        >
-          <Plus size={14} /> ADD NEW PRODUCT
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setCategoryModalOpen(true)}
+            className="btn-secondary py-3 px-5 text-[10px] flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <FolderPlus size={14} /> MANAGE CATEGORIES
+          </button>
+          <button
+            onClick={handleOpenCreate}
+            className="btn-primary py-3 px-6 text-[10px] flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <Plus size={14} /> ADD NEW PRODUCT
+          </button>
+        </div>
       </div>
 
       {/* 2. Filters & Searches */}
@@ -319,21 +472,22 @@ export default function AdminProductsPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full bg-brand-bg-gray dark:bg-zinc-900 border border-brand-border focus:border-brand-primary text-xs pl-11 pr-4 py-3 rounded-xs uppercase focus:outline-hidden"
-            placeholder="Search by product name, SKU or ID..."
+            placeholder="Search by product name, SKU or color..."
           />
         </div>
 
         {/* Categories selector */}
         <div className="flex gap-2 w-full md:w-auto items-center overflow-x-auto select-none">
           <span className="text-[9px] tracking-wider font-bold uppercase text-brand-foreground/50 hidden sm:inline mr-2">Category:</span>
-          {categories.map((cat) => (
+          {categoryFilterList.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 text-[9px] font-bold tracking-widest uppercase rounded-xs border cursor-pointer transition-colors ${selectedCategory === cat
-                ? "bg-brand-primary text-white border-brand-primary dark:bg-white dark:text-black dark:border-white"
-                : "border-brand-border text-brand-foreground/60 hover:border-brand-primary"
-                }`}
+              className={`px-4 py-2 text-[9px] font-bold tracking-widest uppercase rounded-xs border cursor-pointer transition-colors whitespace-nowrap ${
+                selectedCategory === cat
+                  ? "bg-brand-primary text-white border-brand-primary dark:bg-white dark:text-black dark:border-white"
+                  : "border-brand-border text-brand-foreground/60 hover:border-brand-primary"
+              }`}
             >
               {cat}
             </button>
@@ -360,7 +514,9 @@ export default function AdminProductsPage() {
                 <tr className="border-b border-brand-border font-serif text-[10px] tracking-widest font-bold uppercase text-brand-foreground/60 bg-brand-bg-gray/50 dark:bg-zinc-900/10">
                   <th className="py-4 px-6 w-20">Preview</th>
                   <th className="py-4 px-4">Product details</th>
+                  <th className="py-4 px-4">Shade / Color</th>
                   <th className="py-4 px-4">Category</th>
+                  <th className="py-4 px-4 text-center">Text Position</th>
                   <th className="py-4 px-4 text-center">Retail Price</th>
                   <th className="py-4 px-4 text-center">Inventory Status</th>
                   <th className="py-4 px-4">Visibility</th>
@@ -397,8 +553,33 @@ export default function AdminProductsPage() {
                       </div>
                     </td>
 
+                    {/* Shade / Color Option */}
+                    <td className="py-4 px-4">
+                      {prod.defaultColor || prod.colorHex ? (
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="w-4 h-4 rounded-full border border-black/20 shadow-xs inline-block shrink-0"
+                            style={{ backgroundColor: prod.colorHex || "#5c4033" }}
+                          />
+                          <span className="text-[10px] font-semibold text-brand-heading uppercase">
+                            {prod.defaultColor || "Standard"}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-[10px] text-brand-foreground/40">—</span>
+                      )}
+                    </td>
+
                     {/* Category */}
                     <td className="py-4 px-4 font-semibold text-brand-heading uppercase">{prod.category}</td>
+
+                    {/* Text Position Info */}
+                    <td className="py-4 px-4 text-center">
+                      <span className="text-[9px] font-mono font-bold uppercase px-2 py-0.5 border border-brand-border/60 bg-brand-bg-gray/50 dark:bg-zinc-900 rounded-xs">
+                        {prod.textPosition || (prod.category?.toLowerCase().includes("lipliner") ? "Top (34%)" : "Center (48%)")}
+                        {prod.textPositionY !== undefined ? ` (${prod.textPositionY}%)` : ""}
+                      </span>
+                    </td>
 
                     {/* Retail Price */}
                     <td className="py-4 px-4 text-center font-semibold text-brand-heading">
@@ -457,18 +638,24 @@ export default function AdminProductsPage() {
         )}
       </div>
 
-      {/* 4. Slide-out / Modal Editor Pane */}
+      {/* 4. Slide-out / Modal Product Editor Pane */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/60 backdrop-blur-xs">
+        <div
+          data-lenis-prevent="true"
+          className="fixed inset-0 z-50 flex items-center justify-end bg-black/60 backdrop-blur-xs overscroll-contain"
+        >
 
           {/* Modal Background Dismiss */}
           <div className="absolute inset-0" onClick={() => setModalOpen(false)} />
 
           {/* Form Content panel */}
-          <div className="relative w-full max-w-2xl h-full bg-white dark:bg-[#0d0c0b] border-l border-brand-border shadow-2xl flex flex-col justify-between z-10 animate-slide-in">
+          <div
+            data-lenis-prevent="true"
+            className="relative w-full max-w-2xl h-full max-h-screen bg-white dark:bg-[#0d0c0b] border-l border-brand-border shadow-2xl flex flex-col justify-between z-10 animate-slide-in overflow-hidden"
+          >
 
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-brand-border">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-brand-border shrink-0 bg-white dark:bg-[#0d0c0b]">
               <div>
                 <span className="text-[9px] tracking-widest font-bold text-brand-foreground/50 uppercase font-sans">WORKSPACE PANEL</span>
                 <h3 className="font-serif text-sm font-semibold tracking-wider text-brand-heading uppercase">
@@ -476,15 +663,22 @@ export default function AdminProductsPage() {
                 </h3>
               </div>
               <button
+                type="button"
                 onClick={() => setModalOpen(false)}
-                className="p-1.5 border border-brand-border rounded-xs hover:border-brand-primary text-brand-foreground"
+                className="p-1.5 border border-brand-border rounded-xs hover:border-brand-primary text-brand-foreground cursor-pointer"
               >
                 <X size={14} />
               </button>
             </div>
 
-            {/* Scrollable Form Body */}
-            <form id="product-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+            {/* Scrollable Form Body with Lenis prevention */}
+            <form
+              id="product-form"
+              onSubmit={handleSubmit}
+              data-lenis-prevent="true"
+              className="flex-1 overflow-y-auto overscroll-contain p-6 space-y-6"
+              style={{ maxHeight: "calc(100vh - 140px)" }}
+            >
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -498,7 +692,7 @@ export default function AdminProductsPage() {
                     value={productId}
                     onChange={(e) => setProductId(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
                     className="w-full bg-white dark:bg-[#0d0c0b] border border-brand-border focus:border-brand-primary text-xs pl-4 pr-4 py-3 rounded-xs uppercase focus:outline-hidden disabled:opacity-50"
-                    placeholder="e.g. cocoa-brown"
+                    placeholder="e.g. cocoa-lipliner-case"
                   />
                 </div>
 
@@ -517,7 +711,7 @@ export default function AdminProductsPage() {
                       }
                     }}
                     className="w-full bg-white dark:bg-[#0d0c0b] border border-brand-border focus:border-brand-primary text-xs pl-4 pr-4 py-3 rounded-xs uppercase focus:outline-hidden"
-                    placeholder="e.g. Cocoa Brown Crocodile Set"
+                    placeholder="e.g. Espresso Lipliner Leather Case"
                   />
                 </div>
 
@@ -552,17 +746,34 @@ export default function AdminProductsPage() {
                   />
                 </div>
 
-                {/* Category */}
+                {/* Category Dropdown with Management */}
                 <div className="space-y-2">
-                  <label className="font-serif text-[10px] tracking-widest font-semibold uppercase text-brand-primary">Category</label>
-                  <input
-                    type="text"
+                  <div className="flex items-center justify-between">
+                    <label className="font-serif text-[10px] tracking-widest font-semibold uppercase text-brand-primary">Category</label>
+                    <button
+                      type="button"
+                      onClick={() => setCategoryModalOpen(true)}
+                      className="text-[9px] font-bold text-brand-primary hover:underline uppercase flex items-center gap-1 cursor-pointer"
+                    >
+                      <FolderPlus size={10} /> + Add / Manage
+                    </button>
+                  </div>
+                  <select
                     required
                     value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="w-full bg-white dark:bg-[#0d0c0b] border border-brand-border focus:border-brand-primary text-xs pl-4 pr-4 py-3 rounded-xs uppercase focus:outline-hidden"
-                    placeholder="e.g. Lip Balm"
-                  />
+                    onChange={(e) => handleCategoryChange(e.target.value)}
+                    className="w-full bg-white dark:bg-[#0d0c0b] border border-brand-border focus:border-brand-primary text-xs px-4 py-3 rounded-xs uppercase focus:outline-hidden cursor-pointer"
+                  >
+                    {categories.map((cat) => (
+                      <option key={cat._id || cat.slug} value={cat.name}>
+                        {cat.name}
+                      </option>
+                    ))}
+                    {/* Fallback if current category isn't yet in list */}
+                    {category && !categories.some(c => c.name === category) && (
+                      <option value={category}>{category}</option>
+                    )}
+                  </select>
                 </div>
 
                 {/* Visibility Status */}
@@ -571,11 +782,236 @@ export default function AdminProductsPage() {
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value as any)}
-                    className="w-full bg-white dark:bg-[#0d0c0b] border border-brand-border focus:border-brand-primary text-xs px-4 py-3 rounded-xs uppercase focus:outline-hidden"
+                    className="w-full bg-white dark:bg-[#0d0c0b] border border-brand-border focus:border-brand-primary text-xs px-4 py-3 rounded-xs uppercase focus:outline-hidden cursor-pointer"
                   >
                     <option value="active">Active (Visible)</option>
                     <option value="draft">Draft (Hidden)</option>
                   </select>
+                </div>
+
+              </div>
+
+              {/* Color / Shade Selection Section */}
+              <div className="space-y-4 p-4 border border-brand-border rounded-xs bg-brand-bg-gray/25 dark:bg-zinc-900/10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Palette size={14} className="text-brand-primary" />
+                    <h4 className="font-serif text-[10px] tracking-widest font-semibold uppercase text-brand-heading">
+                      Product Shade & Color Option
+                    </h4>
+                  </div>
+                  <span className="text-[9px] text-brand-foreground/50 font-mono">{colorHex}</span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Color Name Input */}
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] tracking-widest font-bold uppercase text-brand-foreground/70">
+                      Color / Shade Name
+                    </label>
+                    <input
+                      type="text"
+                      value={defaultColor}
+                      onChange={(e) => setDefaultColor(e.target.value)}
+                      className="w-full bg-white dark:bg-[#0d0c0b] border border-brand-border focus:border-brand-primary text-xs px-3 py-2.5 rounded-xs uppercase focus:outline-hidden"
+                      placeholder="e.g. Espresso, Capri, Rougé"
+                    />
+                  </div>
+
+                  {/* Color Picker & Hex Code */}
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] tracking-widest font-bold uppercase text-brand-foreground/70">
+                      Hex Code & Picker
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <div className="relative w-10 h-10 shrink-0 border border-brand-border rounded-xs overflow-hidden cursor-pointer shadow-xs">
+                        <input
+                          type="color"
+                          value={colorHex || "#5c4033"}
+                          onChange={(e) => setColorHex(e.target.value)}
+                          className="absolute -top-2 -left-2 w-16 h-16 cursor-pointer border-none bg-transparent"
+                          title="Pick Color"
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        value={colorHex}
+                        onChange={(e) => setColorHex(e.target.value)}
+                        className="w-full bg-white dark:bg-[#0d0c0b] border border-brand-border focus:border-brand-primary text-xs px-3 py-2.5 rounded-xs uppercase font-mono focus:outline-hidden"
+                        placeholder="#5C4033"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Preset Shade Swatches */}
+                <div className="space-y-1.5 pt-2 border-t border-brand-border/40">
+                  <span className="text-[8px] tracking-widest font-bold uppercase text-brand-foreground/50">
+                    Quick Select Signature Colors:
+                  </span>
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {SIGNATURE_COLOR_PRESETS.map((preset) => (
+                      <button
+                        key={preset.name}
+                        type="button"
+                        onClick={() => {
+                          setDefaultColor(preset.name);
+                          setColorHex(preset.hex);
+                        }}
+                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xs border text-[9px] font-bold uppercase transition-all cursor-pointer ${
+                          defaultColor.toLowerCase() === preset.name.toLowerCase()
+                            ? "border-brand-primary bg-brand-primary text-white dark:bg-white dark:text-black"
+                            : "border-brand-border bg-white dark:bg-[#0d0c0b] text-brand-foreground/70 hover:border-brand-primary"
+                        }`}
+                      >
+                        <span
+                          className="w-2.5 h-2.5 rounded-full border border-black/20 shrink-0"
+                          style={{ backgroundColor: preset.hex }}
+                        />
+                        <span>{preset.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Monogram Text Initial Stamping Position Section */}
+              <div className="space-y-4 p-4 border border-brand-border rounded-xs bg-brand-bg-gray/25 dark:bg-zinc-900/10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Type size={14} className="text-brand-primary" />
+                    <h4 className="font-serif text-[10px] tracking-widest font-semibold uppercase text-brand-heading">
+                      Monogram Initial Stamping Position
+                    </h4>
+                  </div>
+                  <span className="text-[9px] text-brand-primary font-mono font-bold uppercase">
+                    Y: {textPositionY}% | X: {textPositionX}
+                  </span>
+                </div>
+
+                {/* Position Presets */}
+                <div className="space-y-1.5">
+                  <label className="text-[9px] tracking-widest font-bold uppercase text-brand-foreground/70">
+                    Position Presets
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTextPosition("top");
+                        setTextPositionY(34);
+                        setTextPositionX("center");
+                      }}
+                      className={`px-3 py-1.5 text-[9px] font-bold uppercase rounded-xs border transition-all cursor-pointer ${
+                        textPosition === "top" || textPositionY === 34
+                          ? "bg-brand-primary text-white border-brand-primary dark:bg-white dark:text-black"
+                          : "border-brand-border bg-white dark:bg-[#0d0c0b] text-brand-foreground/80 hover:border-brand-primary"
+                      }`}
+                    >
+                      Top (Lipliner Case - 34%)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTextPosition("center");
+                        setTextPositionY(48);
+                        setTextPositionX("center");
+                      }}
+                      className={`px-3 py-1.5 text-[9px] font-bold uppercase rounded-xs border transition-all cursor-pointer ${
+                        textPosition === "center" && textPositionY === 48
+                          ? "bg-brand-primary text-white border-brand-primary dark:bg-white dark:text-black"
+                          : "border-brand-border bg-white dark:bg-[#0d0c0b] text-brand-foreground/80 hover:border-brand-primary"
+                      }`}
+                    >
+                      Center (Lip Balm Case - 48%)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTextPosition("bottom");
+                        setTextPositionY(75);
+                        setTextPositionX("center");
+                      }}
+                      className={`px-3 py-1.5 text-[9px] font-bold uppercase rounded-xs border transition-all cursor-pointer ${
+                        textPosition === "bottom" || textPositionY === 75
+                          ? "bg-brand-primary text-white border-brand-primary dark:bg-white dark:text-black"
+                          : "border-brand-border bg-white dark:bg-[#0d0c0b] text-brand-foreground/80 hover:border-brand-primary"
+                      }`}
+                    >
+                      Bottom (75%)
+                    </button>
+                  </div>
+                </div>
+
+                {/* Fine Tuning Controls: Vertical Slider & Horizontal Alignment */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-brand-border/40">
+                  {/* Vertical Position Slider */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[9px] tracking-widest font-bold uppercase text-brand-foreground/70 flex items-center gap-1">
+                        <MoveVertical size={10} /> Vertical Offset (% from top)
+                      </label>
+                      <span className="text-[9px] font-mono font-bold text-brand-heading">{textPositionY}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={10}
+                      max={90}
+                      step={1}
+                      value={textPositionY}
+                      onChange={(e) => {
+                        setTextPositionY(parseInt(e.target.value));
+                        setTextPosition("custom");
+                      }}
+                      className="w-full accent-brand-primary cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Horizontal Alignment */}
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] tracking-widest font-bold uppercase text-brand-foreground/70">
+                      Horizontal Alignment
+                    </label>
+                    <div className="flex gap-2">
+                      {(["left", "center", "right"] as const).map((align) => (
+                        <button
+                          key={align}
+                          type="button"
+                          onClick={() => setTextPositionX(align)}
+                          className={`flex-1 py-2 text-[9px] font-bold uppercase rounded-xs border transition-all cursor-pointer ${
+                            textPositionX === align
+                              ? "bg-brand-primary text-white border-brand-primary dark:bg-white dark:text-black"
+                              : "border-brand-border bg-white dark:bg-[#0d0c0b] text-brand-foreground/70 hover:border-brand-primary"
+                          }`}
+                        >
+                          {align}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Live Stamping Preview */}
+                <div className="pt-2 border-t border-brand-border/40 flex items-center gap-4">
+                  <div className="w-20 h-28 border border-brand-border bg-brand-bg-gray/50 dark:bg-zinc-900 rounded-xs flex items-center justify-center p-1 relative overflow-hidden">
+                    <PersonalizerPreview
+                      color={defaultColor}
+                      initials="TR"
+                      image={images[0] || (category.toLowerCase().includes("lipliner") ? "/products/cocoa-lipliner-case.jpeg" : undefined)}
+                      category={category}
+                      textPosition={textPosition}
+                      textPositionY={textPositionY}
+                      textPositionX={textPositionX}
+                      size="sm"
+                      className="w-full h-full"
+                    />
+                  </div>
+                  <div className="space-y-1 text-xs">
+                    <span className="font-semibold text-brand-heading text-[11px]">Live Stamping Preview</span>
+                    <p className="text-[10px] text-brand-foreground/60 leading-tight">
+                      Initials (e.g. "TR") will stamp at {textPositionY}% height and {textPositionX} alignment.
+                    </p>
+                  </div>
                 </div>
 
               </div>
@@ -634,48 +1070,14 @@ export default function AdminProductsPage() {
                 />
               </div>
 
-              {/* Dynamic Benefits / Key Features */}
+              {/* Dynamic Product FAQs (Frequently Asked Questions) */}
               <div className="space-y-3 p-4 border border-brand-border rounded-xs bg-brand-bg-gray/25 dark:bg-zinc-900/10">
-                <h4 className="font-serif text-[10px] tracking-widest font-semibold uppercase text-brand-heading">ATELIER CORE BENEFITS</h4>
-
-                {/* Benefits List */}
-                <ul className="space-y-2">
-                  {benefits.map((b, idx) => (
-                    <li key={idx} className="flex justify-between items-center text-xs text-brand-foreground/80 pl-2 border-l border-brand-primary">
-                      <span>{b}</span>
-                      <button
-                        type="button"
-                        onClick={() => removeBenefit(idx)}
-                        className="text-[9px] font-bold text-red-500 hover:underline cursor-pointer"
-                      >
-                        REMOVE
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-
-                {/* Add Benefit Inputs */}
-                <div className="flex gap-2 pt-2 border-t border-brand-border/40">
-                  <input
-                    type="text"
-                    value={newBenefit}
-                    onChange={(e) => setNewBenefit(e.target.value)}
-                    className="flex-grow bg-white dark:bg-[#0d0c0b] border border-brand-border focus:border-brand-primary text-xs px-4 py-2 rounded-xs focus:outline-hidden"
-                    placeholder="e.g. Scent: Lavender Blossom"
-                  />
-                  <button
-                    type="button"
-                    onClick={addBenefit}
-                    className="px-4 py-2 text-[9px] font-bold tracking-widest uppercase bg-brand-primary text-white dark:bg-white dark:text-black rounded-xs cursor-pointer border border-brand-primary dark:border-white"
-                  >
-                    ADD
-                  </button>
+                <div className="flex items-center gap-2">
+                  <HelpCircle size={14} className="text-brand-primary" />
+                  <h4 className="font-serif text-[10px] tracking-widest font-semibold uppercase text-brand-heading">
+                    PRODUCT CARE & CLIENT FAQS ({faqs.length})
+                  </h4>
                 </div>
-              </div>
-
-              {/* Dynamic FAQs */}
-              <div className="space-y-3 p-4 border border-brand-border rounded-xs bg-brand-bg-gray/25 dark:bg-zinc-900/10">
-                <h4 className="font-serif text-[10px] tracking-widest font-semibold uppercase text-brand-heading">CLIENT CARE FAQS</h4>
 
                 {/* FAQs List */}
                 <div className="space-y-3">
@@ -701,21 +1103,21 @@ export default function AdminProductsPage() {
                     value={newFaqQ}
                     onChange={(e) => setNewFaqQ(e.target.value)}
                     className="w-full bg-white dark:bg-[#0d0c0b] border border-brand-border focus:border-brand-primary text-xs px-4 py-2 rounded-xs focus:outline-hidden"
-                    placeholder="Frequently Asked Question"
+                    placeholder="Add Question (e.g. How do I swap balm refills?)"
                   />
                   <textarea
                     rows={2}
                     value={newFaqA}
                     onChange={(e) => setNewFaqA(e.target.value)}
                     className="w-full bg-white dark:bg-[#0d0c0b] border border-brand-border focus:border-brand-primary text-xs px-4 py-2 rounded-xs focus:outline-hidden leading-relaxed font-sans"
-                    placeholder="Concierge Response..."
+                    placeholder="Add Concierge Response / Answer..."
                   />
                   <button
                     type="button"
                     onClick={addFaq}
                     className="px-6 py-2 text-[9px] font-bold tracking-widest uppercase bg-brand-primary text-white dark:bg-white dark:text-black rounded-xs cursor-pointer border border-brand-primary dark:border-white w-max ml-auto block"
                   >
-                    ADD FAQ
+                    + ADD FAQ
                   </button>
                 </div>
               </div>
@@ -723,11 +1125,11 @@ export default function AdminProductsPage() {
             </form>
 
             {/* Footer Triggers */}
-            <div className="px-6 py-5 border-t border-brand-border flex justify-end gap-3 bg-brand-bg-gray/10 dark:bg-zinc-900/10">
+            <div className="px-6 py-5 border-t border-brand-border flex justify-end gap-3 bg-brand-bg-gray/10 dark:bg-zinc-900/10 shrink-0">
               <button
                 type="button"
                 onClick={() => setModalOpen(false)}
-                className="btn-secondary py-3 px-6 text-[10px]"
+                className="btn-secondary py-3 px-6 text-[10px] cursor-pointer"
               >
                 CANCEL
               </button>
@@ -748,6 +1150,113 @@ export default function AdminProductsPage() {
               </button>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* 5. Category Management Modal (Rendered with z-[70] so it opens directly over anything) */}
+      {categoryModalOpen && (
+        <div
+          data-lenis-prevent="true"
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-black/75 backdrop-blur-xs p-4 overscroll-contain"
+        >
+          <div className="absolute inset-0" onClick={() => setCategoryModalOpen(false)} />
+          <div
+            data-lenis-prevent="true"
+            className="relative w-full max-w-lg bg-white dark:bg-[#0d0c0b] border border-brand-border shadow-2xl rounded-xs p-6 space-y-6 z-10"
+          >
+            <div className="flex items-center justify-between border-b border-brand-border pb-4">
+              <div>
+                <span className="text-[9px] tracking-widest font-bold text-brand-foreground/50 uppercase font-sans">CATALOG SETTINGS</span>
+                <h3 className="font-serif text-base font-semibold tracking-wider text-brand-heading uppercase">
+                  Manage Product Categories
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCategoryModalOpen(false)}
+                className="p-1.5 border border-brand-border rounded-xs hover:border-brand-primary text-brand-foreground cursor-pointer"
+              >
+                <X size={14} />
+              </button>
+            </div>
+
+            {/* Existing Categories List */}
+            <div className="space-y-3">
+              <label className="font-serif text-[10px] tracking-widest font-semibold uppercase text-brand-primary block">
+                Active Categories ({categories.length})
+              </label>
+              <div
+                data-lenis-prevent="true"
+                className="max-h-56 overflow-y-auto space-y-2 border border-brand-border/60 rounded-xs p-2 bg-brand-bg-gray/30 dark:bg-zinc-900/30 overscroll-contain"
+              >
+                {categories.length === 0 ? (
+                  <p className="text-xs text-brand-foreground/50 text-center py-4">No categories created yet.</p>
+                ) : (
+                  categories.map((cat) => (
+                    <div
+                      key={cat._id || cat.slug}
+                      className="flex items-center justify-between p-2.5 bg-white dark:bg-[#0d0c0b] border border-brand-border/50 rounded-xs text-xs"
+                    >
+                      <div>
+                        <span className="font-bold text-brand-heading uppercase">{cat.name}</span>
+                        {cat.description && (
+                          <p className="text-[10px] text-brand-foreground/60">{cat.description}</p>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteCategory(cat)}
+                        className="p-1.5 text-brand-foreground/40 hover:text-red-500 hover:border-red-500 border border-transparent rounded-xs transition-colors cursor-pointer"
+                        title="Delete Category"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Create New Category Form */}
+            <form onSubmit={handleCreateCategory} className="space-y-3 pt-3 border-t border-brand-border">
+              <label className="font-serif text-[10px] tracking-widest font-semibold uppercase text-brand-primary block">
+                Add New Category
+              </label>
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  required
+                  value={newCatName}
+                  onChange={(e) => setNewCatName(e.target.value)}
+                  className="w-full bg-white dark:bg-[#0d0c0b] border border-brand-border focus:border-brand-primary text-xs px-3 py-2.5 rounded-xs uppercase focus:outline-hidden"
+                  placeholder="e.g. Lipliner Case, Lip Balm, Gift Sets"
+                />
+                <input
+                  type="text"
+                  value={newCatDesc}
+                  onChange={(e) => setNewCatDesc(e.target.value)}
+                  className="w-full bg-white dark:bg-[#0d0c0b] border border-brand-border focus:border-brand-primary text-xs px-3 py-2.5 rounded-xs focus:outline-hidden"
+                  placeholder="Brief description (optional)"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setCategoryModalOpen(false)}
+                  className="btn-secondary py-2 px-4 text-[10px] cursor-pointer"
+                >
+                  CLOSE
+                </button>
+                <button
+                  type="submit"
+                  disabled={creatingCategory}
+                  className="btn-primary py-2 px-5 text-[10px] flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  {creatingCategory ? "CREATING..." : "+ CREATE CATEGORY"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -6,13 +6,13 @@ import { authenticateAdmin } from "@/lib/auth";
 import { CasingSchema } from "@/lib/schemas";
 
 const DEFAULT_CASING_COLORS = [
-  { name: "Espresso", hex: "#5c4033", image: "/products/cocoa-brown.jpg", desc: "Crocodile Embossed Espresso" },
-  { name: "Bleu nuit", hex: "#1d2951", image: "/products/midnight-navy.jpg", desc: "Crocodile Embossed Navy" },
-  { name: "Emerald", hex: "#1b4d3e", image: "/products/forest-green.jpg", desc: "Crocodile Embossed Emerald" },
-  { name: "Rougé", hex: "#800020", image: "/products/ruby-red.jpg", desc: "Crocodile Embossed Rougé" },
-  { name: "Capri", hex: "#4ba3e3", image: "/products/sky-blue.png", desc: "Crocodile Embossed Capri" },
-  { name: "Rosé sakura", hex: "#e8a7b8", image: "/products/rose-sakura.jpg", desc: "Crocodile Embossed Sakura" },
-  { name: "Rosé fuchsia", hex: "#c2185b", image: "/products/rose-fuchsia.jpg", desc: "Crocodile Embossed Fuchsia" }
+  { name: "Espresso", hex: "#5c4033", image: "/products/cocoa-brown.jpeg", desc: "Crocodile Embossed Espresso" },
+  { name: "Bleu nuit", hex: "#1d2951", image: "/products/midnight-navy.jpeg", desc: "Crocodile Embossed Navy" },
+  { name: "Emerald", hex: "#1b4d3e", image: "/products/forest-green.jpeg", desc: "Crocodile Embossed Emerald" },
+  { name: "Rougé", hex: "#800020", image: "/products/ruby-red.jpeg", desc: "Crocodile Embossed Rougé" },
+  { name: "Capri", hex: "#4ba3e3", image: "/products/sky-blue.jpeg", desc: "Crocodile Embossed Capri" },
+  { name: "Rosé sakura", hex: "#e8a7b8", image: "/products/rose-sakura.jpeg", desc: "Crocodile Embossed Sakura" },
+  { name: "Rosé fuchsia", hex: "#c2185b", image: "/products/rose-fuchsia.jpeg", desc: "Crocodile Embossed Fuchsia" }
 ];
 
 // GET: Public fetch of all customizer colors (seeds if empty)

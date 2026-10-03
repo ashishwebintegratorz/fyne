@@ -17,6 +17,10 @@ interface ProductData {
   isCustomizable: boolean;
   defaultColor?: string;
   defaultInitials?: string;
+  category?: string;
+  textPosition?: "top" | "center" | "bottom" | "custom";
+  textPositionY?: number;
+  textPositionX?: "left" | "center" | "right";
   images?: string[];
 }
 
@@ -41,23 +45,25 @@ const DEFAULT_PRODUCT_DATA: Omit<ProductData, "id" | "name" | "defaultColor"> = 
 };
 
 const PRODUCTS_DB: Record<string, ProductData> = {
-  "espresso": { ...DEFAULT_PRODUCT_DATA, id: "espresso", name: "Espresso Leather Casing", defaultColor: "Espresso" },
-  "cocoa-brown": { ...DEFAULT_PRODUCT_DATA, id: "cocoa-brown", name: "Espresso Leather Casing", defaultColor: "Espresso" },
-  "capri": { ...DEFAULT_PRODUCT_DATA, id: "capri", name: "Capri Sky Blue Casing", defaultColor: "Capri" },
-  "sky-blue": { ...DEFAULT_PRODUCT_DATA, id: "sky-blue", name: "Capri Sky Blue Casing", defaultColor: "Capri" },
-  "bleu-nuit": { ...DEFAULT_PRODUCT_DATA, id: "bleu-nuit", name: "Bleu Nuit Navy Casing", defaultColor: "Bleu nuit" },
-  "midnight-navy": { ...DEFAULT_PRODUCT_DATA, id: "midnight-navy", name: "Bleu Nuit Navy Casing", defaultColor: "Bleu nuit" },
-  "emerald": { ...DEFAULT_PRODUCT_DATA, id: "emerald", name: "Emerald Forest Casing", defaultColor: "Emerald" },
-  "forest-green": { ...DEFAULT_PRODUCT_DATA, id: "forest-green", name: "Emerald Forest Casing", defaultColor: "Emerald" },
-  "roug": { ...DEFAULT_PRODUCT_DATA, id: "roug", name: "Rougé Burgundy Casing", defaultColor: "Rougé" },
-  "rouge": { ...DEFAULT_PRODUCT_DATA, id: "rouge", name: "Rougé Burgundy Casing", defaultColor: "Rougé" },
-  "ruby-red": { ...DEFAULT_PRODUCT_DATA, id: "ruby-red", name: "Rougé Burgundy Casing", defaultColor: "Rougé" },
-  "rose-sakura": { ...DEFAULT_PRODUCT_DATA, id: "rose-sakura", name: "Rosé Sakura Casing", defaultColor: "Rosé sakura" },
-  "ros-fuchsia": { ...DEFAULT_PRODUCT_DATA, id: "ros-fuchsia", name: "Rosé Fuchsia Casing", defaultColor: "Rosé fuchsia" },
-  "rose-fuchsia": { ...DEFAULT_PRODUCT_DATA, id: "rose-fuchsia", name: "Rosé Fuchsia Casing", defaultColor: "Rosé fuchsia" },
-  "luxury-lip-balm": { ...DEFAULT_PRODUCT_DATA, id: "luxury-lip-balm", name: "Monogramed Leather Lip Balm", defaultColor: "Espresso" },
-  "leather-sleeve-duo": { ...DEFAULT_PRODUCT_DATA, id: "leather-sleeve-duo", name: "Rougé Burgundy Casing", defaultColor: "Rougé" },
-  "balm-refill-trio": { ...DEFAULT_PRODUCT_DATA, id: "balm-refill-trio", name: "Capri Sky Blue Casing", defaultColor: "Capri" },
+  "espresso": { ...DEFAULT_PRODUCT_DATA, id: "espresso", name: "Espresso Leather Casing", defaultColor: "Espresso", category: "Lip Balm" },
+  "cocoa-brown": { ...DEFAULT_PRODUCT_DATA, id: "cocoa-brown", name: "Espresso Leather Casing", defaultColor: "Espresso", category: "Lip Balm" },
+  "capri": { ...DEFAULT_PRODUCT_DATA, id: "capri", name: "Capri Sky Blue Casing", defaultColor: "Capri", category: "Lip Balm" },
+  "sky-blue": { ...DEFAULT_PRODUCT_DATA, id: "sky-blue", name: "Capri Sky Blue Casing", defaultColor: "Capri", category: "Lip Balm" },
+  "bleu-nuit": { ...DEFAULT_PRODUCT_DATA, id: "bleu-nuit", name: "Bleu Nuit Navy Casing", defaultColor: "Bleu nuit", category: "Lip Balm" },
+  "midnight-navy": { ...DEFAULT_PRODUCT_DATA, id: "midnight-navy", name: "Bleu Nuit Navy Casing", defaultColor: "Bleu nuit", category: "Lip Balm" },
+  "emerald": { ...DEFAULT_PRODUCT_DATA, id: "emerald", name: "Emerald Forest Casing", defaultColor: "Emerald", category: "Lip Balm" },
+  "forest-green": { ...DEFAULT_PRODUCT_DATA, id: "forest-green", name: "Emerald Forest Casing", defaultColor: "Emerald", category: "Lip Balm" },
+  "roug": { ...DEFAULT_PRODUCT_DATA, id: "roug", name: "Rougé Burgundy Casing", defaultColor: "Rougé", category: "Lip Balm" },
+  "rouge": { ...DEFAULT_PRODUCT_DATA, id: "rouge", name: "Rougé Burgundy Casing", defaultColor: "Rougé", category: "Lip Balm" },
+  "ruby-red": { ...DEFAULT_PRODUCT_DATA, id: "ruby-red", name: "Rougé Burgundy Casing", defaultColor: "Rougé", category: "Lip Balm" },
+  "rose-sakura": { ...DEFAULT_PRODUCT_DATA, id: "rose-sakura", name: "Rosé Sakura Casing", defaultColor: "Rosé sakura", category: "Lip Balm" },
+  "ros-fuchsia": { ...DEFAULT_PRODUCT_DATA, id: "ros-fuchsia", name: "Rosé Fuchsia Casing", defaultColor: "Rosé fuchsia", category: "Lip Balm" },
+  "rose-fuchsia": { ...DEFAULT_PRODUCT_DATA, id: "rose-fuchsia", name: "Rosé Fuchsia Casing", defaultColor: "Rosé fuchsia", category: "Lip Balm" },
+  "luxury-lip-balm": { ...DEFAULT_PRODUCT_DATA, id: "luxury-lip-balm", name: "Monogramed Leather Lip Balm", defaultColor: "Espresso", category: "Lip Balm" },
+  "lipliner-case": { ...DEFAULT_PRODUCT_DATA, id: "lipliner-case", name: "Espresso Lipliner Leather Case", defaultColor: "Espresso", category: "Lipliner Case", textPosition: "top", textPositionY: 24, images: ["/products/cocoa-lipliner-case.jpeg"] },
+  "cocoa-lipliner-case": { ...DEFAULT_PRODUCT_DATA, id: "cocoa-lipliner-case", name: "Espresso Lipliner Leather Case", defaultColor: "Espresso", category: "Lipliner Case", textPosition: "top", textPositionY: 24, images: ["/products/cocoa-lipliner-case.jpeg"] },
+  "leather-sleeve-duo": { ...DEFAULT_PRODUCT_DATA, id: "leather-sleeve-duo", name: "Rougé Burgundy Casing", defaultColor: "Rougé", category: "Leather Casing" },
+  "balm-refill-trio": { ...DEFAULT_PRODUCT_DATA, id: "balm-refill-trio", name: "Capri Sky Blue Casing", defaultColor: "Capri", category: "Refill Cartridge" },
 };
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -168,6 +174,11 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   color={selectedColor}
                   initials={initials}
                   foilColor={foilColor}
+                  textPosition={product.textPosition}
+                  textPositionY={product.textPositionY}
+                  textPositionX={product.textPositionX}
+                  category={product.category}
+                  image={product.images?.[0]}
                   size="xl"
                   className="transition-transform duration-500 group-hover:scale-[1.02] w-full h-full"
                 />
@@ -182,7 +193,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <div className="space-y-3">
               <span className="font-sans text-[10px] tracking-[0.25em] font-semibold text-brand-foreground/60 uppercase">MAISON DE FYNÉ</span>
               <h1 className="font-serif text-3xl md:text-5xl font-light tracking-wide leading-tight text-brand-heading uppercase">
-                Monogramed Leather Lip Balm
+                {product.name}
               </h1>
 
               <div className="flex flex-wrap items-center gap-3 sm:gap-5 pt-1">

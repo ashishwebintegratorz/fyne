@@ -10,11 +10,22 @@ export async function GET(request: Request) {
   try {
     await connectToDatabase();
     
+    const { searchParams } = new URL(request.url);
+    const categoryQuery = searchParams.get("category");
+
     // Check if requester is admin
     const isAdmin = await authenticateAdmin(request);
     
     // Admins can see drafts, clients only see active
-    const query = isAdmin ? {} : { status: "active" };
+    const query: any = isAdmin ? {} : { status: "active" };
+    if (categoryQuery) {
+      const normalizedQuery = categoryQuery.replace(/-/g, " ").trim();
+      query.$or = [
+        { category: { $regex: new RegExp(`^${normalizedQuery}$`, "i") } },
+        { category: { $regex: new RegExp(`^${categoryQuery.trim()}$`, "i") } }
+      ];
+    }
+
     const products = await Product.find(query).sort({ createdAt: -1 });
 
     return NextResponse.json({ success: true, products });
@@ -40,7 +51,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: result.error.issues[0].message || "Invalid input data" }, { status: 400 });
     }
 
-    const { productId, name, price, description, benefits, faqs, category, stock, images, status } = result.data;
+    const { productId, name, price, description, benefits, faqs, category, defaultColor, colorHex, textPosition, textPositionY, textPositionX, stock, images, status } = result.data;
     const cleanProductId = productId.toLowerCase().trim().replace(/[^a-z0-9-]/g, "") || productId;
 
     // Check unique productId
@@ -59,6 +70,11 @@ export async function POST(request: Request) {
       benefits: benefits || [],
       faqs: faqs || [],
       category: category || "Lip Balm",
+      defaultColor: defaultColor || "",
+      colorHex: colorHex || "",
+      textPosition: textPosition || "center",
+      textPositionY: textPositionY !== undefined ? textPositionY : 48,
+      textPositionX: textPositionX || "center",
       stock: stock !== undefined ? stock : 100,
       images: images || [],
       status: status || "active"

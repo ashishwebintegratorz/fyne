@@ -12,11 +12,32 @@ export default function Navbar() {
   const { cart, setCartOpen, theme, toggleTheme, currency, setCurrency } = useCartStore();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+  const [categories, setCategories] = useState<any[]>([
+    { name: "Lip Balm", slug: "lip-balm", description: "Handcrafted Monogrammed Leather Cases" },
+    { name: "Lipliner Case", slug: "lipliner-case", description: "Elongated Crocodile Leather Sleeve" }
+  ]);
   const [currencyOpen, setCurrencyOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState<any[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
+
+  // Fetch categories dynamically
+  const loadCategories = () => {
+    fetch("/api/categories")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.categories && data.categories.length > 0) {
+          setCategories(data.categories);
+        }
+      })
+      .catch((err) => console.error("Error fetching categories:", err));
+  };
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
 
   // Calculate total items count
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -67,6 +88,7 @@ export default function Navbar() {
   // Close mobile menu and search on path changes
   useEffect(() => {
     setMobileMenuOpen(false);
+    setCategoryDropdownOpen(false);
     setSearchOpen(false);
     setSearchQuery("");
   }, [pathname]);
@@ -80,13 +102,6 @@ export default function Navbar() {
       (p.category && p.category.toLowerCase().includes(q))
     );
   });
-
-  const navLinks = [
-    { name: "HOME", href: "/" },
-    { name: "SHOP", href: "/customizer/luxury-lip-balm" },
-    { name: "OUR STORY", href: "/about" },
-    { name: "CONTACT US", href: "/contact" },
-  ];
 
   return (
     <>
@@ -108,24 +123,112 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Center Navigation Links (Minimalist OVIA layout) */}
-          <nav className="hidden md:flex items-center space-x-10">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className={`relative font-sans text-[11px] sm:text-[11.5px] tracking-[0.2em] font-semibold transition-colors uppercase ${
-                    isActive
-                      ? "text-[#2B170B] dark:text-[#E8D8CD] border-b-2 border-[#2B170B] dark:border-[#E8D8CD] pb-1"
-                      : "text-[#3D2314] hover:text-[#180A04] dark:text-[#CBB5A1] dark:hover:text-white"
-                  }`}
-                >
-                  {navLinks.find((l) => l.href === link.href)?.name || link.name}
-                </Link>
-              );
-            })}
+          {/* Center Navigation Links (Minimalist OVIA layout with Category dropdown) */}
+          <nav className="hidden md:flex items-center space-x-9">
+            <Link
+              href="/"
+              className={`relative font-sans text-[11px] sm:text-[11.5px] tracking-[0.2em] font-semibold transition-colors uppercase ${
+                pathname === "/"
+                  ? "text-[#2B170B] dark:text-[#E8D8CD] border-b-2 border-[#2B170B] dark:border-[#E8D8CD] pb-1"
+                  : "text-[#3D2314] hover:text-[#180A04] dark:text-[#CBB5A1] dark:hover:text-white"
+              }`}
+            >
+              HOME
+            </Link>
+
+            {/* Categories Dropdown */}
+            <div
+              className="relative group py-2"
+              onMouseEnter={() => {
+                loadCategories();
+                setCategoryDropdownOpen(true);
+              }}
+              onMouseLeave={() => setCategoryDropdownOpen(false)}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  loadCategories();
+                  setCategoryDropdownOpen(!categoryDropdownOpen);
+                }}
+                className="flex items-center gap-1.5 font-sans text-[11px] sm:text-[11.5px] tracking-[0.2em] font-semibold text-[#3D2314] hover:text-[#180A04] dark:text-[#CBB5A1] dark:hover:text-white transition-colors uppercase cursor-pointer"
+              >
+                <span>CATEGORIES</span>
+                <ChevronDown
+                  size={12}
+                  className={`transition-transform duration-200 ${categoryDropdownOpen ? "rotate-180" : "group-hover:translate-y-0.5"}`}
+                />
+              </button>
+
+              {/* Animated Category Menu */}
+              <AnimatePresence>
+                {categoryDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    className="absolute left-1/2 -translate-x-1/2 top-full mt-1 w-64 bg-white/95 dark:bg-[#0f0e0d]/95 backdrop-blur-md border border-brand-border shadow-xl py-2 rounded-xs z-50 divide-y divide-brand-border/40 max-h-[70vh] overflow-y-auto"
+                  >
+                    {categories.map((cat) => (
+                      <Link
+                        key={cat._id || cat.slug || cat.name}
+                        href={`/category/${cat.slug || cat.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+                        onClick={() => setCategoryDropdownOpen(false)}
+                        className="block px-4 py-3 hover:bg-brand-bg-gray/60 dark:hover:bg-zinc-900/60 transition-colors group"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-sans text-xs font-semibold uppercase tracking-wider text-brand-heading group-hover:text-brand-primary transition-colors">
+                            {cat.name}
+                          </span>
+                          <span className="text-[9px] font-mono uppercase text-brand-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                            View →
+                          </span>
+                        </div>
+                        {cat.description && (
+                          <p className="text-[10px] text-brand-foreground/60 font-light mt-0.5 line-clamp-1">
+                            {cat.description}
+                          </p>
+                        )}
+                      </Link>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <Link
+              href="/customizer/luxury-lip-balm"
+              className={`relative font-sans text-[11px] sm:text-[11.5px] tracking-[0.2em] font-semibold transition-colors uppercase ${
+                pathname.startsWith("/customizer")
+                  ? "text-[#2B170B] dark:text-[#E8D8CD] border-b-2 border-[#2B170B] dark:border-[#E8D8CD] pb-1"
+                  : "text-[#3D2314] hover:text-[#180A04] dark:text-[#CBB5A1] dark:hover:text-white"
+              }`}
+            >
+              SHOP
+            </Link>
+
+            <Link
+              href="/about"
+              className={`relative font-sans text-[11px] sm:text-[11.5px] tracking-[0.2em] font-semibold transition-colors uppercase ${
+                pathname === "/about"
+                  ? "text-[#2B170B] dark:text-[#E8D8CD] border-b-2 border-[#2B170B] dark:border-[#E8D8CD] pb-1"
+                  : "text-[#3D2314] hover:text-[#180A04] dark:text-[#CBB5A1] dark:hover:text-white"
+              }`}
+            >
+              OUR STORY
+            </Link>
+
+            <Link
+              href="/contact"
+              className={`relative font-sans text-[11px] sm:text-[11.5px] tracking-[0.2em] font-semibold transition-colors uppercase ${
+                pathname === "/contact"
+                  ? "text-[#2B170B] dark:text-[#E8D8CD] border-b-2 border-[#2B170B] dark:border-[#E8D8CD] pb-1"
+                  : "text-[#3D2314] hover:text-[#180A04] dark:text-[#CBB5A1] dark:hover:text-white"
+              }`}
+            >
+              CONTACT US
+            </Link>
           </nav>
 
           {/* Right Action Icons */}
@@ -203,21 +306,54 @@ export default function Navbar() {
             className="fixed inset-x-0 top-[110px] z-30 bg-white dark:bg-[#0d0c0b] shadow-lg border-b border-brand-border md:hidden flex flex-col px-8 py-8 space-y-6"
           >
             <div className="flex flex-col space-y-4">
-              {navLinks.map((link, idx) => (
-                <motion.div
-                  initial={{ opacity: 0, x: -5 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.04 }}
-                  key={link.name}
-                >
-                  <Link
-                    href={link.href}
-                    className="font-serif text-sm tracking-widest text-[#3D2314] dark:text-[#E8D8CD] block hover:text-[#180A04]"
-                  >
-                    {link.name}
-                  </Link>
-                </motion.div>
-              ))}
+              <Link
+                href="/"
+                onClick={() => setMobileMenuOpen(false)}
+                className="font-serif text-sm tracking-widest text-[#3D2314] dark:text-[#E8D8CD] block hover:text-[#180A04]"
+              >
+                HOME
+              </Link>
+
+              {/* Mobile Categories Accordion */}
+              <div className="space-y-2 pt-2 pb-2 border-y border-brand-border/40">
+                <span className="text-[10px] font-sans font-bold tracking-[0.2em] text-brand-foreground/50 uppercase block">
+                  CATEGORIES
+                </span>
+                <div className="pl-3 space-y-2">
+                  {categories.map((cat) => (
+                    <Link
+                      key={cat._id || cat.slug || cat.name}
+                      href={`/category/${cat.slug || cat.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="font-serif text-xs tracking-wider text-brand-heading block hover:text-brand-primary"
+                    >
+                      • {cat.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              <Link
+                href="/customizer/luxury-lip-balm"
+                onClick={() => setMobileMenuOpen(false)}
+                className="font-serif text-sm tracking-widest text-[#3D2314] dark:text-[#E8D8CD] block hover:text-[#180A04]"
+              >
+                SHOP
+              </Link>
+              <Link
+                href="/about"
+                onClick={() => setMobileMenuOpen(false)}
+                className="font-serif text-sm tracking-widest text-[#3D2314] dark:text-[#E8D8CD] block hover:text-[#180A04]"
+              >
+                OUR STORY
+              </Link>
+              <Link
+                href="/contact"
+                onClick={() => setMobileMenuOpen(false)}
+                className="font-serif text-sm tracking-widest text-[#3D2314] dark:text-[#E8D8CD] block hover:text-[#180A04]"
+              >
+                CONTACT US
+              </Link>
             </div>
           </motion.div>
         )}

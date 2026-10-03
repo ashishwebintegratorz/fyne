@@ -10,7 +10,7 @@ interface CurrencySelectorProps {
   showLabel?: boolean;
 }
 
-const CURRENCY_META: Record<CurrencyCode, { flag: string; region: string; cleanName: string }> = {
+const CURRENCY_META: Record<string, { flag: string; region: string; cleanName: string }> = {
   AED: { flag: "🇦🇪", region: "UAE", cleanName: "UAE Dirham" },
   USD: { flag: "🌐", region: "Global", cleanName: "US Dollar" },
 };

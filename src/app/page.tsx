@@ -65,6 +65,18 @@ const BEST_SELLERS = [
     defaultColor: "Rosé fuchsia",
     defaultInitials: "",
   },
+  {
+    productId: "cocoa-lipliner-case",
+    name: "Espresso Lipliner Leather Case",
+    price: 95,
+    isCustomizable: true,
+    defaultColor: "Espresso",
+    defaultInitials: "TR",
+    category: "Lipliner Case",
+    textPosition: "top",
+    textPositionY: 24,
+    images: ["/products/cocoa-lipliner-case.jpeg"],
+  },
 ];
 
 export default function Home() {
@@ -80,12 +92,33 @@ export default function Home() {
     isCustomizable: boolean;
     defaultColor: string;
     defaultInitials: string;
+    category?: string;
+    textPosition?: "top" | "center" | "bottom" | "custom";
+    textPositionY?: number;
+    textPositionX?: "left" | "center" | "right";
     images?: string[];
   }
 
   const [products, setProducts] = useState<HomepageProduct[]>(BEST_SELLERS as HomepageProduct[]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   useEffect(() => {
+    async function loadCategories() {
+      try {
+        const res = await fetch("/api/categories");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.categories) {
+            setCategories(data.categories);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load categories on home:", err);
+      }
+    }
+    loadCategories();
+
     async function loadDbProducts() {
       try {
         const res = await fetch("/api/products");
@@ -99,6 +132,10 @@ export default function Home() {
               isCustomizable: p.isCustomizable ?? true,
               defaultColor: p.defaultColor || p.name,
               defaultInitials: p.defaultInitials || "",
+              category: p.category,
+              textPosition: p.textPosition,
+              textPositionY: p.textPositionY,
+              textPositionX: p.textPositionX,
               images: p.images || [],
             }));
             setProducts(mapped);
@@ -168,6 +205,16 @@ export default function Home() {
     }, 600);
   };
 
+  const displayedProducts =
+    selectedCategory === "all"
+      ? products
+      : products.filter(
+          (p) =>
+            p.category &&
+            (p.category.toLowerCase() === selectedCategory.toLowerCase() ||
+              p.category.toLowerCase().replace(/[^a-z0-9]+/g, "-") === selectedCategory.toLowerCase())
+        );
+
   return (
     <div className="flex flex-col w-full bg-white dark:bg-[#0d0c0b] text-brand-foreground font-sans">
 
@@ -178,7 +225,7 @@ export default function Home() {
       <section className="py-24 px-6 md:px-12 bg-white dark:bg-[#0d0c0b]">
         <div className="max-w-7xl mx-auto">
 
-          <div className="flex items-baseline justify-between border-b border-brand-border pb-6 mb-12">
+          <div className="flex items-baseline justify-between border-b border-brand-border pb-6 mb-8">
             <h2 className="font-serif text-lg md:text-xl font-normal tracking-[0.2em] text-brand-heading uppercase">
               Best Seller
             </h2>
@@ -211,14 +258,59 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Product Cards Slider Carousel */}
-          <div className="relative">
-            <div
-              ref={scrollRef}
-              className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth gap-6 sm:gap-8 pb-6 scrollbar-none"
-              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          {/* Category Filter Pills (Dynamically synchronized with DB) */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-8 scrollbar-none">
+            <button
+              onClick={() => setSelectedCategory("all")}
+              className={`px-4 py-2 rounded-xs text-[10px] font-sans font-semibold tracking-widest uppercase transition-all cursor-pointer whitespace-nowrap ${
+                selectedCategory === "all"
+                  ? "bg-brand-primary text-white dark:text-black shadow-xs"
+                  : "bg-brand-bg-gray dark:bg-zinc-900 border border-brand-border text-brand-foreground/70 hover:border-brand-primary"
+              }`}
             >
-              {products.map((prod) => (
+              All Collections
+            </button>
+            {categories.map((cat) => (
+              <button
+                key={cat._id || cat.slug || cat.name}
+                onClick={() => setSelectedCategory(cat.name)}
+                className={`px-4 py-2 rounded-xs text-[10px] font-sans font-semibold tracking-widest uppercase transition-all cursor-pointer whitespace-nowrap ${
+                  selectedCategory.toLowerCase() === cat.name.toLowerCase()
+                    ? "bg-brand-primary text-white dark:text-black shadow-xs"
+                    : "bg-brand-bg-gray dark:bg-zinc-900 border border-brand-border text-brand-foreground/70 hover:border-brand-primary"
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+
+          {/* Product Cards Slider Carousel or Empty State */}
+          {displayedProducts.length === 0 ? (
+            <div className="py-16 text-center space-y-3 bg-brand-bg-gray/40 dark:bg-zinc-900/20 border border-dashed border-brand-border p-8 rounded-xs my-6">
+              <p className="font-serif text-sm tracking-wider text-brand-heading uppercase">
+                No products found in this category
+              </p>
+              <p className="font-sans text-xs text-brand-foreground/60 font-light">
+                We are currently preparing new luxury pieces for the <strong>{selectedCategory}</strong> collection.
+              </p>
+              <div className="pt-2">
+                <button
+                  onClick={() => setSelectedCategory("all")}
+                  className="btn-primary text-[10px] py-2 px-5 inline-block cursor-pointer uppercase"
+                >
+                  View All Products
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="relative">
+              <div
+                ref={scrollRef}
+                className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth gap-6 sm:gap-8 pb-6 scrollbar-none"
+                style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+              >
+                {displayedProducts.map((prod) => (
                 <div
                   key={prod.productId}
                   className="flex-shrink-0 w-[calc(50%-12px)] sm:w-[calc(50%-16px)] md:w-[calc(33.333%-22px)] snap-start group flex flex-col justify-between text-left space-y-5"
@@ -231,6 +323,11 @@ export default function Home() {
                     <PersonalizerPreview
                       color={prod.defaultColor || prod.name}
                       initials={prod.defaultInitials || ""}
+                      category={prod.category}
+                      image={prod.images?.[0]}
+                      textPosition={prod.textPosition}
+                      textPositionY={prod.textPositionY}
+                      textPositionX={prod.textPositionX}
                       size="lg"
                       className="w-full h-full"
                     />
@@ -275,6 +372,7 @@ export default function Home() {
               ))}
             </div>
           </div>
+          )}
 
         </div>
       </section>

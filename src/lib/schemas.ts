@@ -14,6 +14,11 @@ export const ProductSchema = z.object({
     })
   ).default([]),
   category: z.string().trim().default("Lip Balm"),
+  defaultColor: z.string().optional().default(""),
+  colorHex: z.string().optional().default(""),
+  textPosition: z.enum(["top", "center", "bottom", "custom"]).default("center"),
+  textPositionY: z.number().min(0).max(100).default(48),
+  textPositionX: z.enum(["left", "center", "right"]).default("center"),
   stock: z.number().int().min(0, "Stock cannot be negative").default(100),
   images: z.array(z.string().min(1, "Invalid image path")).default([]),
   status: z.enum(["active", "draft"]).default("active"),

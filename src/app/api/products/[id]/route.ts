@@ -84,6 +84,11 @@ export async function PUT(
       "benefits",
       "faqs",
       "category",
+      "defaultColor",
+      "colorHex",
+      "textPosition",
+      "textPositionY",
+      "textPositionX",
       "stock",
       "images",
       "status"
